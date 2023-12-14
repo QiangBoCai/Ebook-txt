@@ -1,0 +1,746 @@
+Blog&onlineTools
+https://www.bejson.com/convert/unix/ 时间戳转换
+SMS
+https://www.cnblogs.com/wuhen1024/p/16018666.html 短信接收流程
+https://www.cnblogs.com/wuhen1024/p/16014413.html 短信发送流程
+
+MMS
+https://blog.csdn.net/yaoming168/article/details/90665880 彩信接收流程
+www.taodudu.cc/news/show-6153218.html?action=onClick
+https://blog.csdn.net/qq_35427437/article/details/93047580
+https://blog.csdn.net/qq_35427437/article/details/89205534 PDU 介绍
+
+MMSSMS.db
+https://www.cnblogs.com/wuhen1024/p/16018666.html mmssms.db表结构
+https://www.cnblogs.com/wuhen1024/p/16018666.html
+
+开发环境
+https://blog.csdn.net/ming15920/article/details/108468195 AndroidStudio 调式Framework
+https://blog.csdn.net/yubo_725/article/details/130141712 Ubuntu安装AndroidStudio
+https://blog.csdn.net/xqf222/article/details/128803700
+https://blog.csdn.net/qq_17234633/article/details/132040583 Ubuntu 中文输入法
+
+
+Python常用加解密  txt文件编码输出，解码输出测试
+
+usb tethering
+
+
+####
+抓取log
+*#*#8661#*#*
+adb pull /sdcard/ls_log .
+
+
+p02k_android13_sm6225
+ubuntu abcd
+wifi 
+	lensgms  Lens@gms321..
+
+source build/envsetup.sh
+lunch qssi-userdebug
+rm -rf out
+./build.sh -j32 dist --qssi_only
+
+ 
+
+
+Android13模块编译命令小结
+
+编译push  framework
+make j16
+adb root && adb remount && adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system/framework/framework*.*  /system/framework/  && adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system_ext/priv-app/SystemUI/SystemUI.apk  /system_ext/priv-app/SystemUI/ && adb reboot
+
+
+
+rm -rf  out/target/common/obj/JAVA_LIBRARIES/framework*
+make -j8 telephony-common      /framework/opt  telephony-common.jar   #### build completed successfully (24:52 (mm:ss)) ####
+
+
+ adb pull /system/framework/telephony-common.jar ~/work/xiaotao/
+
+ 
+ 
+make -j8 framework-minus-apex  /framework/base  framework.jar   #### build completed successfully (40:34 (mm:ss)) ####
+
+
+adb pull  /system/framework/framework.jar ~/work/xiaotao
+adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system/framework/framework.jar  /system/framework/
+adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system/framework/telephony-common.jar  /system/framework/
+
+
+
+make -j8 framework-res  FrameworkRes framework-res.apk    #### build completed successfully (02:43 (mm:ss)) ####
+adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system/framework/framework-res.apk  /system/framework/
+
+make -j8  framework/base/services   service.jar
+rm -rf ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/common/obj/JAVA_LIBRARIES/SettingsLib*     
+make SystemUI -j8                              build completed successfully (08:04 (mm:ss)) ####
+adb root && adb remount && adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system_ext/priv-app/SystemUI/SystemUI.apk  /system_ext/priv-app/SystemUI/ && adb reboot
+
+
+
+adb  devices报错
+no permissions (user in plugdev group; are your udev rules wrong?)
+
+lsusb 找到  05c6:9024 Qualcomm
+Bus 004 Device 001: ID 1d6b:0003 Linux Foundation 3.0 root hub
+Bus 003 Device 005: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
+Bus 003 Device 004: ID 0e0f:0002 VMware, Inc. Virtual USB Hub
+
+Bus 003 Device 011: ID 05c6:9024 Qualcomm, Inc. 
+
+编辑 sudo gedit /etc/udev/rules.d/ARM_debug_tools.rules 
+
+
+加一行
+SUBSYSTEMS=="usb", ATTRS{idVendor}=="05c6", ATTRS{idProduct}=="9024", \
+    MODE="660", GROUP="plugdev", TAG+="uaccess", \
+    SYMLINK+="stlinkv3_%n"
+	
+重启udev
+sudo /etc/init.d/udev restart
+sudo adb kill-server
+sudo adb start-server
+
+####5781 
+本机号码010-2917-0905
+gsm.sim.operator.numeric
+    private boolean isKtSim(){
+        boolean ret = false;
+        String mccmncs = "45008,45002,45004";
+        String currentMccmnc = (android.os.SystemProperties.get("gsm.sim.operator.numeric", ""));
+        Log.w(TAG, "currentMccmnc  = "+ currentMccmnc);
+        if(mccmncs.contains(currentMccmnc)){
+            ret=true;
+        }
+        return ret;
+    }
+	
+	
+编码格式
+adb pull /data/data/com.android.providers.telephony/databases/mmssms.db
+mmse
+adb tcpdump 日志
+tcpdump -i any -vv -w 112.pcap
+tcpdump -i any -vv -w 112.pcap
+mmse
+MMS_HttpUtils | Mms 
+
+adb pull /data/user_de/0/com.android.phone/files/ .
+<boolean name="supportHttpCharsetHeader" value="true"/>
+adb push files/carrierconfig-com.android.carrierconfig-89860043191748037165-1435.xml  /data/user_de/0/com.android.phone/files
+
+
+
+adb shell "dumpsys activity | grep mFocus"
+  mFocusedApp=ActivityRecord{aec339c u0 com.android.mms/.ui.ConversationList} t9}
+    mFocusedWindow=Window{ac746fa u0 com.android.mms/com.android.mms.ui.ConversationList}
+~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/vendor/codeaurora/commonsys/packages/apps/Mms/AndroidManifest.xml 
+ mmm ./vendor/codeaurora/commonsys/packages/apps/Mms/ -j8   #### build completed successfully (50:59 (mm:ss)) ####
+
+ 
+adb root && adb remount && adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system/framework/framework*.*  /system/framework/  && adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system_ext/priv-app/Mms/Mms.apk  /system_ext/priv-app/Mms/Mms.apk  && adb reboot
+
+
+/system/framework/framework-graphics.jar: 1 file pushed, 0 skipped. 8.4 MB/s (3817 bytes in 0.000s)
+/system/framework/framework.jar: 1 file pushed, 0 skipped. 40.3 MB/s (38570325 bytes in 0.913s)
+/system/framework/framework-res.apk: 1 file pushed, 0 skipped. 13.2 MB/s (20604652 bytes in 1.492s)
+
+
+
+ 
+ 
+
+96 0c ea 7f eb 81 8d eb 81 8e ec af a0 00
+96 07 ea 3f eb 81 8e 3f 00
+
+
+
+
+Z:\P02K\sm6225\LA.QSSI.13.0\LINUX\android\vendor\codeaurora\commonsys\packages\apps\Mms\src\com\android\mms\transaction\HttpUtils.java
+####5545 
+<string name="sim_card_status_no_msisdn">Can be used after number registration.</string>
+KeyguardIndicationController.java
+
+ private static void setLockScreenSimCardStatusText(boolean isNoMsisdn) {
+          if (null != mLockScreenSimCardStatusTextView && mLockScreenSimCardStatusTextView.getVisibility() == VISIBLE) {
+              mLockScreenSimCardStatusTextView.setText(isNoMsisdn ?
+                      R.string.sim_card_status_no_msisdn : R.string.sim_card_status_absent);
+          }
+      }
+ 
+  NetworkController: SimCardConfirmActivity--Status of the SIM card : 5, msisdn : +821029170905
+  
+  
+NetworkControllerImpl.java
+863                  // @hnlens-Add by wangz-begin
+864                  if (null != mPhone) {
+865                      int state = mPhone.getSimState();
+866                      Log.d(TAG, "SimCardConfirmActivity--Status of the SIM card : " + state + ", msisdn : " + mPhone.getMsisdn());
+867                      if (state == TelephonyManager.SIM_STATE_ABSENT) {
+868                          readyCount = 0;
+869                          com.android.systemui.statusbar.KeyguardIndicationController
+870                                  .setSimCardStatusTextViewVisibility(true, false);
+871                          if (isBootCompleted) {
+872                              new Handler().postDelayed(new Runnable() {
+873                                  @Override
+874                                  public void run() {
+875                                      startSimCardConfirmActivity();
+876                                  }
+877                              }, 5000);
+878                          } else {
+879                              startSimCardConfirmActivity();
+880                          }
+881                      } else if (state == TelephonyManager.SIM_STATE_READY) {
+882                          if (readyCount >= 1) {
+883                              boolean isNoMsisdn = TextUtils.isEmpty(mPhone.getMsisdn());
+884                              com.android.systemui.statusbar.KeyguardIndicationController.setSimCardStatusTextViewVisibility(isNoMsisdn, isNoMsisdn);
+885                          }
+886                          readyCount++;
+887                          isBootCompleted = false;
+888                      }
+889                  }
+890                  // @hnlens-end
+
+
+
+
+
+
+getMsisdn方法调用流程小结：
+
+TelephonyManager.java
+	public String getMsisdn() >> public String getMsisdn(int subId) >>   IPhoneSubInfo info.getMsisdnForSubscriber(subId, getOpPackageName(), getAttributionTag());
+	
+PhoneSubInfoController.java
+	public String getMsisdn(String callingPackage, String callingFeatureId) {
+           return getMsisdnForSubscriber(getDefaultSubscription(), callingPackage, callingFeatureId); 
+	>>  (phone)-> phone.getMsisdn()
+GsmCdmaPhone.java
+  @Override
+       public String getMsisdn() {
+           if (isPhoneTypeGsm()) {
+               IccRecords r = mIccRecords.get();//IccRecords  getMsisdnNumber
+               return (r != null) ? r.getMsisdnNumber() : null;
+           } else if (isPhoneTypeCdmaLte()) {
+               return (mSimRecords != null) ? mSimRecords.getMsisdnNumber() : null; //  SIMRecords extends IccRecords,重写了getMsisdnNumber
+           } else {
+               loge("getMsisdn: not expected on CDMA");
+               return null;
+           }
+       }
+  @Override
+      public boolean setLine1Number(String alphaTag, String number, Message onComplete) {
+           if (isPhoneTypeGsm()) {
+              IccRecords r = mIccRecords.get();
+               if (r != null) {
+                   r.setMsisdnNumber(alphaTag, number, onComplete);
+                   return true;
+               } else {
+                   return false;
+               }
+           } else {
+               loge("setLine1Number: not possible in CDMA");
+               return false;
+           }
+       }
+	   
+	
+SIMRecords.java
+    //1.从SIM卡EF_MSISDN中读取
+        // FIXME should examine EF[MSISDN]'s capability configuration
+        // to determine which is the voice/data/fax line
+        new AdnRecordLoader(mFh).loadFromEF(EF_MSISDN, getExtFromEf(EF_MSISDN), 1,
+                    obtainMessage(EVENT_GET_MSISDN_DONE));
+		EVENT_GET_MSISDN_DONE  更新SIMRecords的mNewMsisdn = mNewMsisdn;
+	//2.setMsisdnNumber(String alphaTag, String number, //GsmCdmaPhone.java 的setLine1Number方法会来调用
+            Message onComplete)
+		updateEF
+		EVENT_SET_MSISDN_DONE  更新SIMRecords的mNewMsisdn= mNewMsisdn;
+		
+
+
+
+	
+对比高通和MTK 相关API无差异都是AOSP默认的。
+日志打印
+ Line 60391: 12-08 11:23:50.513  3312  3945 D SubscriptionController: [getActiveSubscriptionInfoForSimSlotIndex]+ slotIndex=0 subId={id=2 iccId= simSlotIndex=0 carrierId=1890 displayName=KT carrierName=서비스 불가 nameSource=0 iconTint=-16746133 number= dataRoaming=0 iconBitmap=null mcc=450 mnc=08 countryIso=kr isEmbedded=false nativeAccessRules=null cardString= cardId=1 portIndex=0 isOpportunistic=false groupUUID=null isGroupDisabled=false profileClass=-1 ehplmns=null hplmns=null subscriptionType=0 groupOwner=null carrierConfigAccessRules=[cert: 98987CACCAAF8355A4DC1FEF2600441F8B0EC923BBFAA3327D099CE4CDE29B0E pkg: null access: 0, cert: 7117EE13C842F1009553C8B70FFF7CF30EC8F04118AE87B6722E2F05193EA09A pkg: null access: 0, cert: 30BCC971FC0B69D54E7795B73EA2B11BF526E783850AFD2E73E1EE66DF120630 pkg: null access: 0, cert: 5EB5628F73BDA9BA3E89EDE80779F105EB45392F19B58844C879E078394CC0B6 pkg: null access: 0, cert: EAF56C49D86B958F040A14CE1A94D4C416E44AA19C6AF87C2CC7E02E5DD9B771 pkg: null access: 0, cert: EE0E64652E...
+
+ 
+
+####6389 
+ framework 添加资源小结
+ 需要在symbols.xml中增加对于的id
+ 
+ Z:\P02K\sm6225\LA.QSSI.13.0\LINUX\android\frameworks\base\core\res\res\values\symbols.xml
+ 
+ 
+http://10.5.103.101:8010/c/qcom/r2/platform/frameworks/opt/telephony/+/21108
+http://10.5.103.101:8010/c/qcom/r2/platform/frameworks/base/+/21107
+
+ 	修改：     res/values-ko/strings.xml
+	修改：     res/values/strings.xml
+	修改：     res/values/symbols.xml
+
+未跟踪的文件:
+  （使用 "git add <文件>..." 以包含要提交的内容）
+
+	res/drawable/ic_roaming_indicator.xml
+
+ 
+####5962 
+ android:theme="@style/Theme.SystemUI.Dialog.Alert"
+ AndroidManifest.xml:777: error: 'Theme.Wallpaper' is incompatible with attribute theme (attr) reference.
+
+packages/services/Telephony/src/com/android/phone/OdinComfirmDataBootReceiver.java-> showMobileDataDialog()
+ if ("android.intent.action.SIM_STATE_CHANGED".equals(action)) {
+            boolean isSimReady = hasSimReady(context);
+            if (isSimReady != mSimReady) {
+                Log.d(TAG, "SIM state is changed, last sim state ready is: "+mSimReady+", new sim state ready is: "+isSimReady);
+                if(isSimReady){
+                    PhoneGlobals.getInstance().mShowedMobileDataDialog = false;
+                }
+                mSimReady = isSimReady;
+            }
+            showMobileDataDialog(context);
+        }
+		
+		
+最终界面Z:\P02K\sm6225\LA.QSSI.13.0\LINUX\android\packages\services\Telephony\AndroidManifest.xml
+        <activity android:name="OdinConfirmDataDialogActivity"
+                android:configChanges="orientation|screenSize|keyboardHidden"
+                android:excludeFromRecents="true"
+                android:launchMode="singleInstance"
+                android:theme="Theme.Wallpaper">
+        </activity>
+
+	mConfirmDialog.getWindow().setTheme(android.R.style.Theme_Translucent_NoTitleBar);	
+	  
+	getWindow().setBackgroundDrawable(new android.graphics.ColorDrawable(android.graphics.Color.WHITE));  
+        // 设置Activity的主题为暗黑模式  
+        setTheme(R.style.DarkTheme);
+		
+		
+		
+Dialog dialog = new Dialog(this, android.R.style.Theme_Translucent_NoTitleBar);  
+
+       dialog.requestWindowFeature(Window.FEATURE_NO_TITLE); // 去除对话框标题栏  
+       dialog.getWindow().setBackgroundDrawable(getResources().getDrawable(R.drawable.desktop_bg)); // 设置对话框背景为桌面背景  
+//add begin by chenweiliang, 20230912, configure AlertDialog for TASK#5720
+FrameworksUtils.configAlertDialog(context, mConfirmDialog);
+//add end
+mConfirmDialog.getWindow().setType(WindowManager.LayoutParams.TYPE_SYSTEM_ALERT);
+mConfirmDialog.setCanceledOnTouchOutside(false);
+
+			
+	
+//
+
+	adb shell "dumpsys activity |grep mFocus"
+  mFocusedApp=ActivityRecord{993ed47 u0 com.hnlens.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher} t245}
+    mFocusedWindow=Window{1f7305d u0 com.hnlens.launcher3/com.android.launcher3.uioverrides.QuickstepLauncher}
+
+	
+####6492 
+MMS_HttpUtils | Mms 
+PduHeaders.java
+ public static final int DELIVERY_TIME                   = 0x87; //135
+  
+182          /**
+183           * The date the message was sent.
+184           * <P>Type: INTEGER (long)</P>
+185           */
+186          public static final String DATE_SENT = "date_sent";
+Set<Entry<Integer, Integer>> setInt = LONG_COLUMN_INDEX_MAP.entrySet();
+for (Entry<Integer, Integer> e : setInt) {
+	int field = e.getKey();
+	android.util.Log.d("xiaotao","PduPersister  PduHeaders field= " +field );
+	if(field == PduHeaders.DELIVERY_TIME){//135 0x87
+		long deliveryTime = header.getLongInteger(field);
+		if(deliveryTime>0){
+			values.put(Mms.DATE_SENT, deliveryTime);
+		}
+		android.util.Log.d("xiaotao","PduPersister  deliveryTime= " +deliveryTime +" Mms.DATE_SENT="+Mms.DATE_SENT);
+	}
+}
+
+
+
+ public static final String DELIVERY_TIME = "d_tm";
+Z:\P02K\sm6225\LA.QSSI.13.0\LINUX\android\frameworks\base\telephony\common\com\google\android\mms\pdu\PduPersister.java
+        LONG_COLUMN_INDEX_MAP.put(PduHeaders.DELIVERY_TIME, PDU_COLUMN_DELIVERY_TIME);
+		
+ public static final int PREVIOUSLY_SENT_DATE            = 0xA1;//161
+				
+ 
+45008 kt
+45005 skt
+
+ 
+android.util.Log.d("liuhao","config.show4gForLte = " +  config.show4gForLte + " config.show4glteForLte = " + config.show4glteForLte + " config.hideLtePlus = " + config.hideLtePlus);
+####6354 
+45008
+1.IMS APN  需要测试抓取日志adb log和modem log   
+	设置网络模式为WCDMA
+	查看APN是否有ims apn  ，看日志是否有尝试使用ims apn拨号的情况
+	
+	
+2. AOSP默认支持，IMS正常注册 ；SIP消息查看MO
+
+3.P-CSCF address via EPS in section 2.3, and 1  待完整的需求文档；日志SIP消息查看P-CSCF地址
+
+4. kt卡打开漫游开关，卡处于漫游状态，拨打*23#，日志SIP消息中phone-context 带有geo-local前缀
+   kt卡拨打  大陆电话，号码前加+，； 日志SIP 消息中正常带+ 
+   
+	
+####5321 
+adb shell cmd phone cc set-value -p hide_lte_plus_data_icon_bool false
+
+adb shell cmd phone cc get-value hide_lte_plus_data_icon_bool
+
+adb shell setprop sys.hls.rom.operator KT    /SKT
+
+adb shell getprop sys.hls.rom.operator
+
+
+lens@ubuntu:~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/frameworks/base$ git branch -av
+* sm6225                       1678a9e56 [ahead 1] [BUG_5321]KT indicator area is different from Zeplin:sys.hls.rom.operator is KT set config.hideLtePlus=false
+  remotes/clo/android13/sm6225 39d4c8a60 Merge "[BUG_5800][P02K][Telephony][ODIN] KT LTE QAT [2.1.1.2 reject cause #6-Illegal ME - Problem/Supplementation Request]修改字符串" into android13/sm6225
+  remotes/clo/android13/sm8475 24b2472bb [TASK_5602][1/5]BST face unlock function
+  remotes/clo/r2.0.r1_00035.0  08fed21d4 [TASK_3193] init: qcom r2.0.r1_00035.0
+  remotes/m/P02K               -> clo/android13/sm6225
+lens@ubuntu:~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/frameworks/base$ git push clo HEAD:refs/for/android13/sm6225
+
+
+String romOperator =  android.os.SystemProperties.get("sys.hls.rom.operator", "");
+ 
+定时任务
+ServiceStateTracker.java 
+
+handleMessage
+	EVENT_PHYSICAL_CHANNEL_CONFIG
+		mLastPhysicalChannelConfigList
+		if(mLastPhysicalChannelConfigList !=null &&mLastPhysicalChannelConfigList.size()>0){
+		    Intent intent = new Intent(TelephonyManager.ACTION_SERVICE_PROVIDERS_UPDATED);
+            intent.putExtra(TelephonyManager.EXTRA_SHOW_SPN, data.shouldShowSpn());
+            intent.putExtra(TelephonyManager.EXTRA_SPN, data.getSpn());
+            intent.putExtra(TelephonyManager.EXTRA_DATA_SPN, data.getDataSpn());
+            intent.putExtra(TelephonyManager.EXTRA_SHOW_PLMN, data.shouldShowPlmn());
+            intent.putExtra(TelephonyManager.EXTRA_PLMN, data.getPlmn());
+            SubscriptionManager.putPhoneIdAndSubIdExtra(intent, mPhone.getPhoneId());
+            mPhone.getContext().sendStickyBroadcastAsUser(intent, UserHandle.ALL);
+		}
+					mPhone.notifyPhysicalChannelConfig(list);
+                    // Notify NR frequency, NR connection status or bandwidths changed.
+                    if (hasChanged) {
+                        mPhone.notifyServiceStateChanged(mPhone.getServiceState());
+                        TelephonyMetrics.getInstance().writeServiceStateChanged(
+                                mPhone.getPhoneId(), mSS);
+                        mPhone.getVoiceCallSessionStats().onServiceStateChanged(mSS);
+                        ImsPhone imsPhone = (ImsPhone) mPhone.getImsPhone();
+                        if (imsPhone != null) {
+                            imsPhone.getImsStats().onServiceStateChanged(mSS);
+                        }
+                        mServiceStateStats.onServiceStateChanged(mSS);
+                    }
+
+	handlePollStateResult
+			>> handlePollStateResultMessage>>setPhyCellInfoFromCellIdentity  >> 
+			 if (cellIdentity instanceof CellIdentityLte) {
+            CellIdentityLte ci = (CellIdentityLte) cellIdentity;
+            // Prioritize the PhysicalChannelConfig list because we might already be in carrier
+            // aggregation by the time poll state is performed.
+            if (primaryPcc != null) {
+                bandwidths = getBandwidthsFromConfigs(mLastPhysicalChannelConfigList);
+				
+				ss.setCellBandwidths
+
+ 
+NetworkControllerImpl.java 
+	onReceive
+		handleConfigurationChanged()
+			>>MobileSignalController.java 
+				controller.setConfiguration(Config config)>>mapIconSets(mConfig)>>
+					mMobileMappingsProxy.mapIconSets(mConfig);
+
+					
+####5775
+来电流程小结
+			
+拨号流程小结
+https://blog.csdn.net/mike_jungle/article/details/110474155
+https://huazai.eleuu.com/?post=66
+%涉及路径
+%frameworks\base\telecomm
+%frameworks\opt\telephony\src\java\com\android\internal\telephony
+%packages\apps\Dialer\java\com\android\dialer
+%packages\services\Telecomm\src\com\android\server\telecom
+%packages\services\Telephony
+%hardware\ril\libril
+%hardware\ril\reference-ril
+Dialer
+    DialpadFragment->>DialpadFragment:handleDialButtonPressed
+    DialpadFragment->>PreCall:start
+    PreCall->>DialerUtils:startActivityWithErrorToast
+    DialerUtils->>DialerUtils:startActivityWithErrorToast
+    DialerUtils->>DialerUtils:placeCallOrMakeToast
+    DialerUtils->>TelecomUtil:placeCall
+    TelecomUtil->>TelecomManager:placeCall
+    %搜ITelecomService.stub
+frameworks\base\telecomm
+    TelecomManager->>TelecomServiceImpl:placeCall
+Telecom
+    TelecomServiceImpl->>UserCallIntentProcessorFactory:create
+    UserCallIntentProcessorFactory->>UserCallIntentProcessor:processIntent
+    UserCallIntentProcessor->>UserCallIntentProcessor:processOutgoingCallIntent
+    UserCallIntentProcessor->>UserCallIntentProcessor:sendIntentToDestination
+    Note over UserCallIntentProcessor,CallIntentProcessor: EXTRA_START_CALL_WITH_VIDEO_STATE
+    UserCallIntentProcessor->>CallIntentProcessor:processIntent
+    CallIntentProcessor->>CallIntentProcessor:processOutgoingCallIntent
+    CallIntentProcessor->>NewOutgoingCallIntentBroadcaster:processCall
+    NewOutgoingCallIntentBroadcaster->>NewOutgoingCallIntentBroadcaster:placeOutgoingCallImmediately
+    NewOutgoingCallIntentBroadcaster->>CallsManager:placeOutgoingCall
+    CallsManager->>Call:startCreateConnection
+    Call->>CreateConnectionProcessor:process
+    CreateConnectionProcessor->>CreateConnectionProcessor:attemptNextPhoneAccount
+    CreateConnectionProcessor->>ConnectionServiceWrapper:createConnection
+    ConnectionServiceWrapper->>ConnectionService:createConnection
+frameworks\base\telecomm
+    %搜extends ConnectionService
+    ConnectionService->>TelephonyConnectionService:onCreateOutgoingConnection
+packages\services\Telephony
+    TelephonyConnectionService->>TelephonyConnectionService:placeOutgoingConnection
+    TelephonyConnectionService->>Phone:dial
+frameworks\opt\telephony
+    %搜extends Phone
+    Phone->>GsmCdmaPhone:dial
+    GsmCdmaPhone->>GsmCdmaPhone:dialInternal
+    GsmCdmaPhone->>GsmCdmaCallTracker:dial
+    GsmCdmaCallTracker->>GsmCdmaCallTracker:dialGsm/dialCdma
+    GsmCdmaCallTracker->>CommandsInterface:dial
+    %接口类搜implements CommandsInterface
+    CommandsInterface->>RIL:dial
+    %搜RadioImpl::dial
+    RIL->>ril_service:dial
+    ril_service->>reference-ril:CALL_ONREQUEST->onRequest
+    Note over ril_service,reference-ril: RIL_REQUEST_DIAL
+    reference-ril->>reference-ril:onRequest
+    reference-ril->>reference-ril:requestDial
+    reference-ril->reference-ril:at_send_command
+    Note left of reference-ril: 发送ATD指令
+
+	
+make -j8 Telecom
+adb push ~/work/P02K/sm6225/LA.QSSI.13.0/LINUX/android/out/target/product/qssi/system/priv-app/Telecom/Telecom.apk   /system/priv-app/Telecom/  && adb reboot
+Activity 透明背景小结
+android:background="@android:color/transparent"
+ 
+ http://10.5.103.101:8010/c/qcom/r2/platform/packages/apps/EmergencyInfo/+/21279
+ http://10.5.103.101:8010/c/qcom/r2/platform/packages/apps/EmergencyInfo/+/21313
+ 
+  http://10.5.103.101:8010/c/qcom/r2/platform/frameworks/base/+/21473 
+  http://10.5.103.101:8010/c/qcom/r2/platform/packages/services/Telephony/+/21474 
+  
+对应的进程是com.android.server.telecom
+Z:\P02K\sm6225\LA.QSSI.13.0\LINUX\android\frameworks\base\telecomm\java\android\telecom\TelecomManager.java
+C:\Users\HP>adb shell "dumpsys activity|grep mFocus"
+
+  mFocusedApp=ActivityRecord{6864930 u0 org.codeaurora.dialer/com.android.incallui.InCallActivity} t277}
+    mFocusedWindow=Window{e016b20 u0 org.codeaurora.dialer/com.android.incallui.InCallActivity}
+
+C:\Users\HP>adb shell "dumpsys activity|grep mFocus"
+  mFocusedApp=ActivityRecord{e9ed8d9 u0 com.android.phone/.EmergencyDialer} t278}
+    mFocusedWindow=Window{767ee9 u0 com.android.phone/com.android.phone.EmergencyDialer}
+
+C:\Users\HP>adb shell "dumpsys activity|grep mFocus"
+  mFocusedApp=ActivityRecord{5f7446d u0 com.google.android.apps.safetyhub/.emergencydialer.ui.EmergencyDialerActivity} t279}
+    mFocusedWindow=Window{e75276f u0 com.google.android.apps.safetyhub/com.google.android.apps.safetyhub.emergencydialer.ui.EmergencyDialerActivity}
+
+C:\Users\HP>adb shell "dumpsys activity|grep mFocus"
+  mFocusedApp=ActivityRecord{7e744d3 u0 com.google.android.apps.safetyhub/.emergencydialer.ui.DialPadActivity} t279}
+    mFocusedWindow=Window{af7c641 u0 com.google.android.apps.safetyhub/com.google.android.apps.safetyhub.emergencydialer.ui.DialPadActivity}
+
+	
+	
+	
+
+
+####5649
+
+
+//第一次
+10-23 14:55:28.222  2825  5429 D SMSDispatcher: sendText id: {x-message-id:0}
+10-23 14:55:28.222  2825  5429 D QtiSmsDispatchersController: sendText: mIsInSecureMode = false, isEmergency = false, isImsAvailable = true, isEmergencySmsSupported = false
+10-23 14:55:28.229  2825  5429 D ImsSmsDispatcher [0]: sendSms:  mRetryCount=0 mMessageRef=0 SS=0
+10-23 14:55:29.060  2825  5361 D ImsSmsDispatcher [0]: onSendSmsResult token=1 messageRef=25 status=1 reason=0 networkReasonCode=-1
+//第二次
+10-23 14:55:37.288  2825  5624 D SMSDispatcher: sendText id: {x-message-id:0}
+10-23 14:55:37.288  2825  5624 D QtiSmsDispatchersController: sendText: mIsInSecureMode = false, isEmergency = false, isImsAvailable = true, isEmergencySmsSupported = false
+10-23 14:55:37.307  2825  5624 D ImsSmsDispatcher [0]: sendSms:  mRetryCount=0 mMessageRef=0 SS=0
+10-23 14:55:38.139  2825  5361 D ImsSmsDispatcher [0]: onSendSmsResult token=2 messageRef=26 status=1 reason=0 networkReasonCode=-1
+ 
+ 
+ 
+SMS发送流程小结
+SMS app > SMS  Framework > QMI> tcpdump>过滤gsm_sms
+APP 流程
+SmsSender>>  smsManager.sendTextMessage
+
+Framework流程
+SmsManager.java>>sendTextMessage >>sendTextMessageInternal>>iSms.sendTextForSubScriber
+    SmsController.java >>sendTextForSubScriber>> sendIccText >>iccSmsIntMgr.sentText
+          IccSmsInterfaceManager>>sendTextInternal>>mDispatchersController.sendText
+                SmsDispatchersController>>sendText
+                QtiSmsDispatchersController extends SmsDispatchersController {//Ims短信
+                                 sendText
+                      >>SMSDispatcher>>sendText                                  
+					             GmsSMSDispatcher>>sendText  //gms短信 >> -> sendSubmitPdu() -> sendRawPdu() -> sendSms()>>RIL (RIL_REQUEST_SEND_SMS) >>AT(AT+CMGS)
+                                 CdmaSMSDispatcher>>sendText //cdma短信
+                                 ImsSmsDispatcher>> sendText //Ims 短信
+
+确认SMS Framework  只有在ImsSmsDispatcher  中有重试逻辑，在发送失败status=3时重发，间隔时间2s；这与日志中成功发送两次，间隔9s 对应不上， 重发可能由SMS App触发；
+  SMSDispatcher.java	  public static final int SEND_RETRY_DELAY = 2000;
+  ImsSmsImplBase.java
+  public static final int SEND_STATUS_OK = 1;
+  public static final int SEND_STATUS_ERROR = 2;
+  public static final int SEND_STATUS_ERROR_RETRY = 3; 
+  public static final int SEND_STATUS_ERROR_FALLBACK = 4;
+  
+  ImsSmsDispatcher.java
+
+  public void onSendSmsResult(int token, int messageRef, @SendStatusResult int status, @SmsManager.Result int reason, int networkReasonCode) {
+  case ImsSmsImplBase.SEND_STATUS_ERROR_RETRY:
+	  int maxSendRetries = isNeedRetryOnce?1:MAX_SEND_RETRIES; //LENS ADD, BUG#5733, retry once
+	  if (tracker.mRetryCount < maxSendRetries) {
+		  tracker.mRetryCount += 1;
+		  //LEND MODIFY start,BUG#3851
+		   sendMessageDelayed(
+				  obtainMessage(EVENT_SEND_RETRY, tracker), getSendRetryDelayFromCC(SEND_RETRY_DELAY));
+		  //LEND MODIFY end
+	  } else {
+		  tracker.onFailed(mContext, reason, networkReasonCode);
+		  mTrackers.remove(token);
+	  }
+	  break;
+	  
+日志中缺少SMS app日志，下一步在 Framework 中SmsManager入口处增加了日志打印，更新小包给测试复测，来确定是否 SMS app 多调用了一次sendTextMessage接口；
+
+
+
+ 
+ 
+确认AP测发起两次
+
+
+
+//ap send sms twice 
+10-23 14:55:28.222  2825  5429 D SMSDispatcher: sendText id: {x-message-id:0}
+10-23 14:55:28.222  2825  5429 D QtiSmsDispatchersController: sendText: mIsInSecureMode = false, isEmergency = false, isImsAvailable = true, isEmergencySmsSupported = false
+10-23 14:55:28.229  2825  5429 D ImsSmsDispatcher [0]: sendSms:  mRetryCount=0 mMessageRef=0 SS=0
+10-23 14:55:29.060  2825  5361 D ImsSmsDispatcher [0]: onSendSmsResult token=1 messageRef=25 status=1 reason=0 networkReasonCode=-1
+
+10-23 14:55:37.288  2825  5624 D SMSDispatcher: sendText id: {x-message-id:0}
+10-23 14:55:37.288  2825  5624 D QtiSmsDispatchersController: sendText: mIsInSecureMode = false, isEmergency = false, isImsAvailable = true, isEmergencySmsSupported = false
+10-23 14:55:37.307  2825  5624 D ImsSmsDispatcher [0]: sendSms:  mRetryCount=0 mMessageRef=0 SS=0
+10-23 14:55:38.139  2825  5361 D ImsSmsDispatcher [0]: onSendSmsResult token=2 messageRef=26 status=1 reason=0 networkReasonCode=-1
+ 
+
+//QMI receive two send sms request
+05:55:28.264019 [0x1544] QMI_MCS_QCSI_PKT
+packetVersion = 2
+V2 {
+   MsgType = Request
+   Counter = 98
+   ServiceId = WMS
+   MajorRev = 1
+   MinorRev = 38
+   ConHandle = 0x03000000
+   MsgId = 0x00000020
+   QmiLength = 30
+   Service_WMS {
+      ServiceWMSV1 {
+         wms_raw_send {
+            wms_raw_send_reqTlvs[0] {
+               Type = 0x01
+               Length = 23
+               raw_message_data {
+                  format = WMS_MESSAGE_FORMAT_GW_PP
+                  len = 20
+                  raw_message = { 
+                     0, 1, 0, 11, 129, 16, 48, 96, 
+                     23, 133, 247, 0, 0, 6, 83, 52, 
+                     89, 173, 38, 3
+                  }
+               }
+            }
+            wms_raw_send_reqTlvs[1] {
+               Type = 0x13
+               Length = 1
+               sms_on_ims {
+                  sms_on_ims = true
+  
+05:55:37.346078 [0x1544] QMI_MCS_QCSI_PKT
+packetVersion = 2
+V2 {
+   MsgType = Request
+   Counter = 116
+   ServiceId = WMS
+   MajorRev = 1
+   MinorRev = 38
+   ConHandle = 0x00000600
+   MsgId = 0x00000020
+   QmiLength = 30
+   Service_WMS {
+      ServiceWMSV1 {
+         wms_raw_send {
+            wms_raw_send_reqTlvs[0] {
+               Type = 0x01
+               Length = 23
+               raw_message_data {
+                  format = WMS_MESSAGE_FORMAT_GW_PP
+                  len = 20
+                  raw_message = { 
+                     0, 1, 0, 11, 129, 16, 48, 96, 
+                     23, 133, 247, 0, 0, 6, 83, 52, 
+                     89, 173, 38, 3
+                  }
+               }
+            }
+            wms_raw_send_reqTlvs[1] {
+               Type = 0x13
+               Length = 1
+               sms_on_ims {
+                  sms_on_ims = true
+				  
+//tcpdump 日志 过滤gsm_sms
+13:55:28
+13:55:37 
+
+
+####6996
+LA.QSSI.13.0/LINUX/android/frameworks/base/telephony/java/com/android/internal/telephony/SmsMessageBase.java
+LA.QSSI.13.0/LINUX/android/frameworks/base/telephony/java/com/android/internal/telephony/gsm/SmsMessage.java
+ 对应mmssms.db   
+ type  
+	all=0
+	inbox 1
+	sent=2
+	
+TP-DA:   Destination Adress 接收方地址   
+TP-PID:  Protocol Identifier 协议标识     protocol
+    /** TP-Protocol-Identifier (TP-PID) */   
+       private int mProtocolIdentifier;
+TP-DCS:  Data Coding Scheme  数据编码方案
+	数据编码方案是短消息（SM）和小区广播消息（CB）中的一个八位位组字段，它携带接收者手机应如何处理接收到的消息的基本信息。 该信息包括：
+    字符集或消息编码，决定消息用户数据的编码
+// TP-Data-Coding-Scheme
+       // see TS 23.038
+       private int mDataCodingScheme;
+   
+	 
+TP-UD:   User Data      用户数据用户数据
+TP-OA:   Originator Adress 发件人地址     address
+TP-SCTS: Service Center Time Stamp   服务中心的时间戳 date_sent
+
+
