@@ -1,0 +1,173 @@
+****end of 1214
+python小结
+python常用加解密
+https://www.yijiyong.com/algorithm/encryption/04-summarypython.html
+Base64位加密（可加密解密,无秘钥)
+MD5加密（加密不可逆）/sha1加密（加密不可逆）
+AES加密（需要密钥才能解密,对称算法)
+RSA加密（公钥加密，私钥解密，非对称算法）
+Python 查看API
+python -m pydoc -p 8080
+
+
+电话会议流程小结：
+https://blog.csdn.net/qq_42787177/article/details/127526766
+SMS重发机制小结：
+https://blog.csdn.net/qq_42787177/article/details/129380580?spm=1001.2014.3001.5502
+
+AP层（App/Framework）
+WMS retry
+NAS retry
+
+呼叫保持流程小结：
+https://blog.csdn.net/qq_42787177/article/details/127610347?spm=1001.2014.3001.5502
+
+高通MMS 调试小结
+https://blog.csdn.net/qq_42787177/article/details/134369340?spm=1001.2014.3001.5502
+
+IMS发送短信流程小结:
+https://blog.csdn.net/qq_42787177/article/details/127395176?spm=1001.2014.3001.5502
+
+飞行模式开启流程小结：
+https://a284628487.github.io/2018/08/11/Telephony-Airplane/
+
+
+SystemUI> AirpaneModeTile.java >>mLazyConnectivityManager.get().setAirplaneMode(enabled);
+Connectivity>ConnectivityManager.java>> IConnectivityManager mService
+				
+TeleService> PhoneGlobals.java>>if (action.equals(Intent.ACTION_AIRPLANE_MODE_CHANGED)) {
+                   boolean airplaneMode = intent.getBooleanExtra("state", false);
+                   handleAirplaneModeChange(airplaneMode);
+    private void handleAirplaneModeChange(boolean isAirplaneNewlyOn) {
+808          int cellState =
+809                  Settings.Global.getInt(
+810                          getContentResolver(), Settings.Global.CELL_ON, PhoneConstants.CELL_ON_FLAG);
+811          switch (cellState) {
+812              case PhoneConstants.CELL_OFF_FLAG:
+813                  // Airplane mode does not affect the cell radio if user
+814                  // has turned it off.
+815                  break;
+816              case PhoneConstants.CELL_ON_FLAG:
+817                  maybeTurnCellOff(isAirplaneNewlyOn); >> setRadioPowerOff()
+818                  break;
+819              case PhoneConstants.CELL_OFF_DUE_TO_AIRPLANE_MODE_FLAG:
+820                  maybeTurnCellOn(isAirplaneNewlyOn);
+821                  break;
+822          }
+823          for (Phone phone : PhoneFactory.getPhones()) {
+824              phone.getServiceStateTracker().onAirplaneModeChanged(isAirplaneNewlyOn);
+825          }
+826      }
+
+    private void setRadioPowerOff() {
+840          Log.i(LOG_TAG, "Turning radio off - airplane");
+841          Settings.Global.putInt(
+842                  getContentResolver(),
+843                  Settings.Global.CELL_ON,
+844                  PhoneConstants.CELL_OFF_DUE_TO_AIRPLANE_MODE_FLAG);
+845          Settings.Global.putInt(getContentResolver(), Settings.Global.ENABLE_CELLULAR_ON_BOOT, 0);
+846          TelephonyProperties.airplane_mode_on(true); // true means int value 1
+847          PhoneUtils.setRadioPower(false);>>  phone.setRadioPower(enabled)
+frameworks/opt/telephony
+              >>PhoneInternalInterface.java; >> setRadioPower(power, false, false, false);//GsmCdmaPhone
+			      >> setRadioPowerForReason>>  mSST.setRadioPowerForReason
+ 
+         ServiceStateTracker.java>>setRadioPower>>  setRadioPowerForReason>>
+								setPowerStateToDesired (开启关闭都要走这里)>> 
+								//关闭飞行模式
+								mCi.setRadioPower(true
+								//打开飞行模式
+								powerOffRadioSafely/processPendingRadioPowerOffAfterDataOff>> hangupAndPowerOff()
+								DcTracker.java>>mPhone.getDcTracker(transport).cleanUpAllConnections(Phone.REASON_RADIO_TURNED_OFF);
+											>>EVENT_CLEAN_UP_ALL_CONNECTIONS>>cleanUpAllConnectionsInternal>>EVENT_DISCONNECT_DONE
+											>>  onDisconnectDone
+								>> mCi.setRadioPower(false, obtainMessage(EVENT_RADIO_POWER_OFF_DONE));
+										 case EVENT_RADIO_POWER_OFF_DONE:
+										  if (mDeviceShuttingDown && mCi.getRadioState()
+																   != TelephonyManager.RADIO_POWER_UNAVAILABLE) {
+															  // during shutdown the modem may not send radio state changed event
+															   // as a result of radio power request
+															   // Hence, issuing shut down regardless of radio power response
+															   mCi.requestShutdown(null);//关闭modem
+														   }
+RIL  CommandsInterface.java  >>RIL.java setRadioPower>> 
+从RILJ到QMI 消息流程：
+https://codeantenna.com/a/AtbJVcVQEm
+高通QMI机制:
+https://www.cnblogs.com/linhaostudy/p/8647242.html
+
+
+TelecomManager placeCall
+
+  public void placeCall(Uri address, Bundle extras) {
+        ITelecomService service = getTelecomService();
+        if (service != null) {
+            if (address == null) {
+                Log.w(TAG, "Cannot place call to empty address.");
+            }
+            try {
+ 
+                String[] emergencyCallCenterPhone = new String[]{"111", "112", "113", "117", "118", "119", "122", "125", "911"};
+                String number = address.getSchemeSpecificPart();
+                boolean isEmergencyCall = false;
+                String packageName = mContext.getOpPackageName();
+                for (String temp : emergencyCallCenterPhone) {
+                    if (temp.equals(number)) {
+                        isEmergencyCall = true;
+                        break;
+                    }
+                }
+                Log.w(TAG, "number="+number+" isEmergencyCall="+isEmergencyCall+" isAirplaneOn()="+isAirplaneOn()+" isKoSim()="+isKoSim() +" packageName="+packageName);
+                if (isAirplaneOn() && isEmergencyCall &&isKoSim()) {
+                    Intent intent = new Intent("tw.action.EMERGENCY_DIALOG");
+                    Log.i(TAG, "sendBroadcast to show EMERGENCY_DIALOG");
+                    mContext.sendBroadcast(intent);
+                    TimerTask task = new TimerTask(){
+                        @Override
+                        public void run(){
+                            try {
+                                service.placeCall(address, extras == null ? new Bundle() : extras,
+                                mContext.getOpPackageName(), mContext.getAttributionTag());
+                            } catch (RemoteException e) {
+                                Log.e(TAG, "Error calling ITelecomService#placeCall", e);
+                            }
+                        }
+                    }; 
+                    Timer timer = new Timer();
+                    timer.schedule(task,3500);
+                    return;
+                }
+ 
+                service.placeCall(address, extras == null ? new Bundle() : extras,
+                        mContext.getOpPackageName(), mContext.getAttributionTag());
+            } catch (RemoteException e) {
+                Log.e(TAG, "Error calling ITelecomService#placeCall", e);
+            }
+        }
+    }
+ 
+    private boolean isAirplaneOn(){
+        boolean isAirplaneOn = Settings.Global.getInt(
+                mContext.getContentResolver(), Settings.Global.AIRPLANE_MODE_ON, 0) == 1;
+        Log.w(TAG, "isAirplaneOn   ,  isAirplaneOn = "+ isAirplaneOn);
+        return isAirplaneOn;
+    }
+
+    private boolean isKoSim(){
+        boolean ret = false;
+        String currentMccmnc = (android.os.SystemProperties.get("gsm.sim.operator.numeric", ""));
+        Log.w(TAG, "currentMccmnc  = "+ currentMccmnc);
+        if(!TextUtils.isEmpty(currentMccmnc) && currentMccmnc.startsWith("450")){
+            ret=true;
+        }
+        return ret;
+    }
+ 
+
+指紋流程小結
+https://cloud.tencent.com/developer/article/1971686
+https://blog.csdn.net/g241893312/category_7027633.html
+
+Android MTU 最大傳輸單元
+https://www.cnblogs.com/lialong1st/p/10623256.html
+NvEfsItemData name="ds_3gpp_mtu" id="65814" description="3GPP Maximum Transmission Unit"
