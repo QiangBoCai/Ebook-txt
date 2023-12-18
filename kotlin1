@@ -1,0 +1,444 @@
+1.Kotlin 基本语法
+文件.kt結尾
+包申明导入，同java，但是少一個分號";"
+package 
+import  
+有多个包会默认导入到每个 Kotlin 文件中：
+    kotlin.*
+函数定义使用关键字 fun ，对比java 参数格式为：参数 : 类型 ,返回值的类型也是这种: 类型的形式
+eg ：  
+public  fun 函数名(参数:参数类型)  :返回值类型{ //public 方法则必须明确写出返回类型，除了返回值类型为Unit可省略
+
+}
+返回void 的方法. 如果一个Java 方法返回 void ，那么从Kotlin 调用时中返回 Unit，Unit可省略
+表达式作为函数体，返回类型自动推断：
+fun sum(a: Int, b: Int) = a + b
+函数的变长参数可以用 vararg 关键字进行标识
+匿名函数Lambda表达
+——————
+常量（不可变变量）val 类似java 的final    ,val<标识符> : <类型> = <初始化值>
+    eg：  var a:Int=0
+变量（可变变量）var ,  var <标识符> : <类型> = <初始化值>
+    eg:    val b:Int=0
+val b = 1       // 系统自动推断变量类型为Int
+常量与变量都可以没有初始化值,但是在引用前必须初始化 
+如果不在声明时初始化则必须提供变量类型
+val c: Int
+c = 1           // 明确赋值
+————————————
+ //当行
+ /***/ 多行注释
+ 与java不同的，Kotlin 中的块注释允许嵌套 /* 多行注释/**注释嵌套 */ */
+ 
+------------
+Kotlin的空安全设计
+//类型后面加?表示可为空
+   var a:String?=null
+   print(a)//null
+对于声明可为空的参数，在使用时要进行空判断处理;
+有两种处理方式，字段后加!!像Java一样抛出空异常，另一种字段后加?可不做处理返回值为 null 或配合 ?: 做空判断处理
+//抛出空指针异常
+val ages = age!!.toInt()
+//不做处理返回 null
+val ages1 = age?.toInt()
+//age为空返回-1
+val ages2 = age?.toInt() ?: -1
+------------
+类型检查&类型自动转换
+ is 运算符检测一个表达式是否某类型的一个实例(类似 Java中的instanceof关键字);  
+fun getStringLength(obj: Any): Int? {
+  if (obj is String) {
+    // 做过类型判断以后，obj会被系统自动转换为String类型
+    return obj.length 
+  }
+  // 这里的obj仍然是Any类型的引用
+  return null
+}
+-----
+区间   
+ a in 1..5   等价于[1,5]    //1,2,3,4,5
+ a in 1 until 5 等价[1,5) //1,2,3,4   
+ for (i in 4..1) print(i) // 什么都不输出
+a in 4 downTo 1 // 4,3,2,1
+ 区间步长step
+ a in 1..5 step 2 //1,3,5
+ ------------------
+
+ 2.Kotlin基本数据类型
+
+ 数值类型（不同与java，字符不属于数值类型）
+ Kotlin 中没有基础数据类型，只有封装的数字类型，保证不会出现空指针
+ Byte  8 字节
+Short  16
+Int  32
+Long  64
+Float  32 
+Double  64
+
+字面常量
+十进制： 123
+长整型：123L
+16进制 0x7B
+2进制 0b11111011
+8进制不支持
+Doubles 默认写法: 123.5, 123.5e10
+ Floats 使用 f 或者 F 后缀：123.5f
+
+使用下划线使数字常量更易读：
+val oneMillion = 1_000_000
+val socialSecurityNumber = 999_99_9999L
+val hexBytes = 0xFF_EC_DE_5E
+val bytes = 0b11010010_01101001_10010100_10010010
+比较大小
+在 Kotlin 中，三个等号 === 表示比较对象地址，两个 == 表示比较两个值大小
+
+类型转换 
+较小类型并不是较大类型的子类型
+eg：不进行显式转换的情况下我们不能把 Byte 型值赋给一个 Int 变量
+val b: Byte = 1 // OK, 字面值是静态检测的
+val i: Int = b // 错误
+我们可以代用：
+toByte(): Byte
+toShort(): Short
+toInt(): Int
+toLong(): Long
+toFloat(): Float
+toDouble(): Double
+toChar(): Char
+eg：
+val b: Byte = 1 // OK, 字面值是静态检测的
+val i: Int = b.toInt() // OK
+
+有些情况下也是可以使用自动类型转化的，前提是可以根据上下文环境推断出正确的数据类型而且数学操作符会做相应的重载。例如下面是正确的：
+val l = 1L + 3 // Long + Int => Long
+
+位操作符
+对Int和Long
+shl(bits) – 左移位 (Java’s <<)
+shr(bits) – 右移位 (Java’s >>)
+ushr(bits) – 无符号右移位 (Java’s >>>)
+and(bits) – 与
+or(bits) – 或
+xor(bits) – 异或
+inv() – 反向
+---------------------
+
+字符类型Char
+不能直接和数字操作，必须单引号包含起来，
+eg   '0'  'a0'  
+'0'.toInt() // 显式转换为数字
+
+特殊字符可以用反斜杠转义。 支持这几个转义序列：\t、 \b、\n、\r、\'、\"、\\ 和 \$
+ 编码其他字符要用 Unicode 转义序列语法：'\uFF00'。
+-----------
+Boolean 布尔类型
+true和false
+布尔运算
+|| 或
+&&  与
+!  非
+
+------------
+数组Array
+有一个 size 属性及 get 和 set 方法
+使用 [] 重载了 get 和 set 方法，所以我们可以通过下标很方便的获取或者设置数组对应位置的值;
+数组的创建两种方式：
+一种是使用函数arrayOf()；
+eg  val a =arrayOf(1,2,3)   //[1,2,3]
+另外一种是使用工厂函数
+    var a=Array(3, { i -> (i * 2) }) //数组长度3 ，i=0,1,2
+    for((index,value) in a.withIndex() ){
+       println( "index:$index | value:$value")//0,2,4
+    }
+
+除了Array还有ByteArray, ShortArray, IntArray，用来表示各个类型的数组，省去了装箱操作，因此效率更高，其用法同Array一样
+val x: IntArray = intArrayOf(1, 2, 3)
+var a:IntArray=IntArray(3, { i -> (i * 2) }) //数组长度3 ，i=0,1,2
+    for((index,value) in a.withIndex() ){
+       println( "index:$index | value:$value")//0,2,4
+    }
+------------
+字符串
+  与Java一样，字符串不可变;
+  方括号 [] 语法可以很方便的获取字符串中的某个字符，也可以通过 for 循环
+
+   支持三个引号 """ 扩起来的字符串，支持多行字符串
+ val text = """
+    |多行字符串
+    |多行字符串
+    """
+println(text)//有前置空格
+println(text.trimMargin())//无前置空格
+默认 | 用作边界前缀，但你可以选择其他字符并作为参数传入，比如 trimMargin(">")
+------------------
+ 字符串模板
+$ 表示一个变量名或者变量值
+$varName 表示变量值
+${varName.fun()} 表示变量的方法返回值:
+var a = 1
+// 模板中的简单名称：
+val s1 = "a is $a" 
+a = 2
+// 模板中的任意表达式：
+val s2 = "${s1.replace("is", "was")}, but now is $a"
+——————
+
+3.Kotlin条件控制
+if或者if  else 语句， 同java
+    var a = 1
+    var b = 2
+    val c = if (a>=b) a else b  //if表达式结果可以赋值给一个变量，取代java的 三木运算符？：
+    println("c 的值为 $c")
+
+条件是一个布尔值，
+或者运算符表达式!  ,> < =,===   in  !in 区间， is  !is 类型判断
+
+------
+when 表达式 ，类似java的switch，when  else 类似switch default  
+when (x) {
+    1 -> print("x == 1")
+    2 -> print("x == 2")
+    else -> { // 注意这个块
+        print("x 不是 1 ，也不是 2")
+    }
+}
+
+如果很多分支需要用相同的方式处理，则可以把多个分支条件放在一起，用逗号分隔
+when (x) {
+    0, 1 -> print("x == 0 or x == 1")
+    else -> print("otherwise")
+}
+when表达式结果也可以赋值给一个变量
+fun hasPrefix(x: Any) = when(x) {
+    is String -> x.startsWith("prefix")
+    else -> false
+}
+when (x) {
+    in 1..10 -> print("x is in the range")
+    !in 10..20 -> print("x is outside the range")
+    else -> print("none of the above")
+}
+when 中使用 in 运算符来判断集合内是否包含某实例：
+    val items = setOf("apple", "banana", "kiwi")
+    when {
+        "orange" in items -> println("juicy")
+        "apple" in items -> println("apple is fine too")
+    }
+
+when 也可以用来取代 if-else if链。 如果不提供参数，所有的分支条件都是简单的布尔表达式
+when {
+    x.isOdd() -> print("x is odd")
+    x.isEven() -> print("x is even")
+    else -> print("x is funny")
+}
+
+ ——————————————
+ 4.Kotlin循环控制
+
+ for 循环可以对任何提供iterator迭代器的对象进行遍历
+ for (item in collection) print(item)
+
+ 遍历数组/集合
+for (i in array.indices) {//在区间上遍历"会编译成优化的实现而不会创建额外对象
+    print(array[i])
+}
+或者
+ 用库函数 withIndex：
+for ((index, value) in array.withIndex()) {
+    println("the element at $index is $value")
+}
+eg:遍历列表
+  val items = listOf("apple", "banana", "kiwi")
+    for (item in items) {
+        println(item)
+    }
+    for ((index,value) in items.withIndex()) {
+        println("item at $index is ${value}")
+    }
+        for (index in items.indices) {
+        println("item at $index is ${items[index]}")
+    }
+--------
+同java，do…while 循环和 while 循环相似，不同的是，do…while 循环至少会执行一次。
+while( 布尔表达式 ) {
+  //循环内容
+}
+
+do {
+       //代码语句
+}while(布尔表达式);
+--------
+基本用法同java
+    return。默认从最直接包围它的函数或者匿名函数返回。
+    break。终止最直接包围它的循环。
+    continue。继续下一次最直接包围它的循环。
+标签用法
+ Kotlin 中任何表达式都可以用标签（label）来标记。 标签的格式为标识符后跟 @ 符号
+ 我们可以用标签限制 break@标签 或者continue@标签：
+loop@ for (i in 1..100) {
+    for (j in 1..100) {
+        if (……) break@loop //跳到外循环标签处
+    }
+}
+return@a 1 意为"从标签 @a 返回 1"
+
+--------
+5.Kotlin 类和对象
+构造器
+https://blog.csdn.net/u011288271/article/details/106546490
+
+
+抽象类
+抽象是面向对象编程的特征之一，类本身，或类中的部分成员，都可以声明为abstract的
+内部类
+用 inner 关键字来表示。
+内部类会带有一个对外部类的对象的引用，所以内部类可以访问外部类成员属性和成员函数。
+为了消除歧义，要访问来自外部作用域的 this，我们使用this@label，其中 @label 是一个 代指 this 来源的标签。
+class Outer {
+    private val bar: Int = 1
+    var v = "成员属性"
+    /**嵌套内部类**/
+    inner class Inner {
+        fun foo() = bar  // 访问外部类成员
+        fun innerTest() {
+            var o = this@Outer //获取外部类的成员变量
+            println("内部类可以引用外部类的成员，例如：" + o.v)
+        }
+    }
+}
+
+
+6.Kotlin继承
+Kotlin 中所有类都继承该 Any 类，它是所有类的超类，对于没有超类型声明的类是默认超类;
+如果一个类要被继承，可以使用 open 关键字进行修饰
+如果子类有主构造函数， 则基类必须在主构造函数中立即初始化。
+open class Person(var name : String, var age : Int){// 基类
+
+}
+class Student(name : String, age : Int, var no : String, var score : Int) : Person(name, age) {
+}
+
+如果子类没有主构造函数，则必须在每一个二级构造函数中用 super 关键字初始化基类，或者在代理另一个构造函数。初始化基类时，可以调用基类的不同构造方法。
+
+/**用户基类**/
+open class Person(name:String){
+    /**次级构造函数**/
+    constructor(name:String,age:Int):this(name){
+        //初始化
+        println("-------基类次级构造函数---------")
+    }
+}
+
+/**子类继承 Person 类**/
+class Student:Person{
+
+    /**次级构造函数**/
+    constructor(name:String,age:Int,no:String,score:Int):super(name,age){
+        println("-------继承类次级构造函数---------")
+        println("学生名： ${name}")
+        println("年龄： ${age}")
+        println("学生号： ${no}")
+        println("成绩： ${score}")
+    }
+}
+
+fun main(args: Array<String>) {
+    var s =  Student("Runoob", 18, "S12345", 89)
+}
+
+在基类中，使用fun声明函数时，此函数默认为final修饰，不能被子类重写。
+如果允许子类重写该函数，那么就要手动添加 open 修饰它, 子类重写方法使用 override 关键词
+/**用户基类**/
+open class Person{
+    open fun study(){       // 允许子类重写
+        println("我毕业了")
+    }
+}
+
+/**子类继承 Person 类**/
+class Student : Person() {
+
+    override fun study(){    // 重写方法
+        println("我在读大学")
+    }
+}
+如果有多个相同的方法（继承或者实现自其他类，如A、B类），则必须要重写该方法，使用super范型去选择性地调用父类的实现。
+open class A {
+    open fun f () { print("A") }
+    fun a() { print("a") }
+}
+
+interface B {
+    fun f() { print("B") } //接口的成员变量默认是 open 的
+    fun b() { print("b") }
+}
+
+class C() : A() , B{
+    override fun f() {
+        super<A>.f()//调用 A.f()
+        super<B>.f()//调用 B.f()
+    }
+}
+
+fun main(args: Array<String>) {
+    val c =  C()
+    c.f();
+
+}
+属性重写
+属性重写使用 override 关键字，属性必须具有兼容类型，每一个声明的属性都可以通过初始化程序或者getter方法被重写
+interface Foo {
+    val count: Int
+}
+
+class Bar1(override val count: Int) : Foo
+class Bar2 : Foo {
+    override var count: Int = 0
+}
+子类不能用 val 重写父类中的 var，我的猜测是：子类重写父类属性，也就相当于必须重写该属性的 getter 和 setter 方法，而子类中的 val 不能有 setter 方法，所以无法“覆盖”父类中 var 的 setter 方法，
+相当于缩小了父类中相应属性的使用范围，是不允许的，就像我们不能把父类中一个 public 方法重写成 private 方法一样。
+
+7.kotlin 接口
+Kotlin 接口与 Java 8 类似，使用 interface 关键字定义接口;
+一个类或者对象可以实现一个或多个接口，但是不支持多继承
+允许方法有默认实现或者不实现：
+interface MyInterface {
+    fun bar()    // 未实现
+    fun foo() {  //已实现 ，这个和java 不同
+      // 可选的方法体
+      println("foo")
+    }
+}
+
+
+接口中的属性只能是抽象的，不允许初始化值，接口不会保存属性值，实现接口时，必须重写属性：
+interface MyInterface{
+    var name:String //name 属性, 抽象的
+}
+ class MyImpl:MyInterface{
+    override var name: String = "test" //重写属性
+}
+函数重写
+实现多个接口时，可能会遇到同一方法继承多个实现的问题，可以使用super<>:泛型区分
+interface A {
+    fun foo() { print("A") }   // 已实现
+    fun bar()                  // 未实现，没有方法体，是抽象的
+}
+ 
+interface B {
+    fun foo() { print("B") }   // 已实现
+    fun bar() { print("bar") } // 已实现
+}
+ 
+class D : A, B {
+    override fun foo() {
+        super<A>.foo()
+        super<B>.foo()
+    }
+ 
+    override fun bar() {
+        super<B>.bar()
+    }
+}
+
+___________
