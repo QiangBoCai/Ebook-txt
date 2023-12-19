@@ -1,0 +1,147 @@
+0.从Java到Kotlin基础
+https://hughclub.github.io/java-kotlin-guide-chinese/#/
+Ubuntu 安装Android  Studio
+sudo apt install snapd
+sudo snap install android-studio --classic
+ubunt18.04使用snap管理程序包，修改配置文件内容都在~/.config/目录下 eg 修改vmoptions
+
+AndroidStudio 快捷键使用eclipse： file>Settings>keymap>Eclipse
+
+1.Kotlin3
+1.1  可见性修饰符Kotlin中也有4种
+Kotlin分别是public（默认所有类可见）、private（当前类可见 ）、protected（当前类可见，子类可见）internal（同一模块内可见）
+1.2 数据类data和单例类object常用
+1.3 集合
+列表List  ArrayList   LinkedList
+val list = ArrayList<String>() 
+list.add("Apple") 
+list.add("Banana") 
+list.add("Orange") 
+list.add("Pear") 
+list.add("Grape")
+内置的listOf()函数来简化， 创建的是一个不可变的集合，该集合只能用于读取，我们无法对集合进行添加、修改或删除操作
+初始化集合的写法，如下所示：
+val list = listOf("Apple", "Banana", "Orange", "Pear", "Grape")
+
+mutableListOf()函数创建一个可变的集合
+ val list = mutableListOf("Apple", "Banana", "Orange", "Pear", "Grape") 
+    list.add("Watermelon")
+
+Set   HashSet
+ Set集合中是不可以存放重复元素的，如果存放了多个相同的元素，只会保留其中一份
+setOf()和mutableSetOf()函数
+
+Map   HashMap
+传统的Map用法是先创建一个HashMap的实例，然后将一个个键值对数
+据添加到Map中。比如这里我们给每种水果设置一个对应的编号，就可以这样写：
+val map = HashMap<String, Int>() 
+map.put("Apple", 1) 
+map.put("Banana", 2) 
+map.put("Orange", 3) 
+map.put("Pear", 4) 
+map.put("Grape", 5)
+kotlin提供了一对mapOf()和
+mutableMapOf()函数来继续简化Map的用法。在mapOf()函数中，我们可以直接传入初始化
+的键值对组合来完成对Map集合的创建：
+val map = mapOf("Apple" to 1, "Banana" to 2, "Orange" to 3, "Pear" to 4, "Grape" to 5) 
+
+
+
+
+1.4 Lambda表达式
+Lambda 表达式的语法结构：
+{参数名1: 参数类型, 参数名2: 参数类型 -> 函数体}
+    val list = listOf("Apple", "Banana", "Orange", "Pear", "Grape", "Watermelon")
+//    val lambda = { fruit: String -> fruit.length }//Lambda完整写法
+//    val maxLengthFruit = list.maxBy(lambda)
+//    val maxLengthFruit = list.maxBy()//省略lambda变量写法
+//    当Lambda 参数是函数的最后一个参数时，可以将Lambda 表达式移到函数括号的外面
+//    val maxLengthFruit = list.maxBy(){ fruit: String -> fruit.length }
+//    Lambda 参数是函数的唯一一个参数的话，还可以将函数的括号省略
+//    val maxLengthFruit = list.maxBy { fruit: String -> fruit.length }
+//    Lambda 表达式中的参数列表其实在大多数情况下不必声明参数类型
+//    val maxLengthFruit = list.maxBy { fruit -> fruit.length }
+//    当Lambda 表达式的参数列表中只有一个参数时，也不必声明参数名，而是可以使用it关键字来代替
+    val maxLengthFruit = list.maxBy { it.length } //Lambda表达式简写
+    println("max length fruit is ${maxLengthFruit}")
+
+1.5 集合的函数式API
+
+maxBy 函数 按Lambda表达规则 取集合中字符最长的返回
+val list = listOf("Apple", "Banana", "Orange", "Pear", "Grape", "Watermelon") 
+val maxLengthFruit = list.maxBy { it.length } 
+println("max length fruit is " + maxLengthFruit)
+
+map函数 ，它用于将集合中的每个元素都映射成一个另外的
+值，映射的规则在Lambda 表达式中指定，最终生成一个新的集合
+val list = listOf("Apple", "Banana", "Orange", "Pear", "Grape", "Watermelon") 
+val newList = list.map { it.toUpperCase() }
+filter函数
+是用来过滤集合中的数据的，它可以单独使用，也可以配合刚才的map函数一起使用
+val list = listOf("Apple", "Banana", "Orange", "Pear", "Grape", "Watermelon") 
+    val newList = list.filter { it.length <= 5 } 
+.map { it.toUpperCase() }
+
+any函数用于判断集合中是否至少存在一个元素满足指定条件 
+all函数用于判断集合中是否所有元素都满足指定条件
+    val list = listOf("Apple", "Banana", "Orange", "Pear", "Grape", "Watermelon")
+    val anyResult = list.any { it.length <= 5 }
+    val allResult = list.all { it.length <= 5 }
+    println("anyResult is " + anyResult + ", allResult is " + allResult)//anyResult is true, allResult is false
+
+ 1.6 Java 函数式API的简化使用 
+限定于从Kotlin中调用Java 方法，并且仅限于单抽象方法接口也必须是用Java 语言定义的
+ Kotlin代码中调用了一个Java 方法，并且该方法接收一个Java 单抽象方法接口参数，就可以使用函数式API
+Java 单抽象方法接口指的是接口中只有一个待实现方法，如果接口中有多个待实现方法，则无法使用函数式API
+Kotlin中有专门的高阶函数来实现更加强大的自定义函数式API功能，暂缓后面补上
+最为常见的单抽象方法接口——Runnable接口。这个接口
+中只有一个待实现的run()方法，定义如下：
+public interface Runnable { 
+    void run(); 
+}
+new Thread(new Runnable() { //java 匿名内部类写法
+    @Override 
+    public void run() { 
+            System.out.println("Thread is running"); 
+    } 
+}).start(); 
+Thread(object : Runnable { //kotlin 对象表达式写法
+    override fun run() { 
+        println("Thread is running") 
+    } 
+}).start()
+Thread类的构造方法是符合Java 函数式API的使用条件的，下面我们就看看
+如何对代码进行精简，如下所示：
+Thread(Runnable { 
+    println("Thread is running") 
+}).start()
+
+如果一个Java 方法的参数列表中有且仅有一个Java 单抽象方法接口参数，我们还可以将接口名进行省略，这样代码就变得更加精简了：
+Thread({ 
+    println("Thread is running") 
+}).start() 
+当Lambda 表达式是方法的最后一个参数时，可以将Lambda 表达式移到方法括号的外面。同时，如果Lambda 表达式还是
+方法的唯一一个参数，还可以将方法的括号省略
+Thread{ 
+    println("Thread is running") 
+}.start() 
+
+Android 中有一个极为常用的点击事件接口OnClickListener
+public interface OnClickListener { 
+    void onClick(View v); 
+} 
+可以看到，这又是一个单抽象方法接口。假设现在我们拥有一个按钮button的实例，然后使用
+Java 代码去注册这个按钮的点击事件，需要这么写：
+button.setOnClickListener(new View.OnClickListener() { 
+    @Override 
+    public void onClick(View v) { 
+    } 
+}); 
+而用Kotlin代码实现同样的功能，就可以使用函数式API的写法来对代码进行简化，结果如下：
+button.setOnClickListener { 
+
+} 
+
+
+1.7 空指针检查
+
