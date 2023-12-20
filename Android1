@@ -144,4 +144,110 @@ button.setOnClickListener {
 
 
 1.7 空指针检查
+?.当对象不为空时正常调用相应的方法，当对象为空时则什么都不做
+if (a != null) { 
+    a.doSomething()
+} 
+这段代码使用?.操作符就可以简化成：
+a?.doSomething()
 
+?: 左边表达式的结果不为空就返回左边表达式的结果，否则就返回右边表达式的结果
+val c = if (a ! = null) { 
+    a 
+} else { 
+    b 
+} 
+这段代码的逻辑使用?:操作符就可以简化成：
+val c = a ?: b
+
+1.8 Kotlin标准函数API
+let 函数  
+obj.let({obj2 -> 
+   //具体业务
+})
+这个函数提供了函数式API的编程接口，并将原始调用对象作为参数传递到Lambda 表达式中
+示例代码如下：
+为了防止变量重名，这里我将参数名改成了obj2，但实际上它们是同一个对象，这就是let函数的作用
+obj.let { obj2 -> 
+    // 编写具体的业务逻辑 
+}
+每次调用study对象的方法时都要进行一次if判断
+fun doStudy(study: Study?) { 
+    study?.readBooks() 
+    study?.doHomework() 
+}
+简化，只判断一次study对象
+fun doStudy(study: Study?) { 
+    study?.let { stu -> 
+        stu.readBooks() 
+        stu.doHomework() 
+    } 
+}
+it简化
+fun doStudy(study: Study?) { 
+    study?.let {  
+        it.readBooks() 
+        it.doHomework() 
+    } 
+}
+
+
+全局变量的值随时都有可能被其他线程所修改，即使使用if做了判空处理，仍然无法保证if语句中的study变量没有空指针风险;?.没有这个风险
+var study:Study?=null
+fun doStudy(){
+    if(study !=null){
+        study.readBooks() //编译报错
+         study!!.readBooks() // !!强制主观认定非空，编译不报错，有隐患
+    }
+}
+ 
+
+ 1.9 字符串内嵌表达式
+
+ Kotlin允许我们在字符串里嵌入${}这种语法结构的表达式;
+ 当表达式中仅有一个变量的时候，还可以将两边的大括号省略;
+    val brand = "Samsung"
+    val price = 1299.99
+    println("Cellphone(brand=" + brand + ", price=" + price + ")")
+//简写
+    println("Cellphone(brand=$brand, price=$price)")
+
+
+1.10   函数的参数默认值 
+fun printParams(num: Int, str: String = "hello") {
+    println("num is $num , str is $str")
+}
+fun main() {
+    printParams(123)//num is 123 , str is hello
+}
+类型不匹配错误提示
+fun printParams(num: Int=10, str: String) {
+    println("num is $num , str is $str")
+}
+fun main() {
+    printParams("Hello")
+}
+键值对参数赋值
+fun main() {
+    printParams(str = "hello")
+}
+函数的参数默认值这个功能可以在很大程度上替代次构造函数的作用
+
+class Student(val sno: String, val grade: Int, name: String, age: Int) : 
+Person(name, age) { 
+    constructor(name: String, age: Int) : this("", 0, name, age) { 
+    } 
+    constructor() : this("", 0) { 
+    } 
+} 
+上述代码中有一个主构造函数和两个次构造函数，次构造函数在这里的作用是提供了使用更少参数来对Student类进行实例化的方式
+无参的次构造函数会调用两个参数的次构造函数，并将这两个参数赋值成初始值。两个参数的次构造函数会调用4个参数的主构造函数，并将缺失的
+两个参数也赋值成初始值
+简写
+我们完全可以通过只编写一个主构造函数，然后给参
+数设定默认值的方式来实现，代码如下所示：
+class Student(val sno: String = "", val grade: Int = 0, name: String = "", age: Int = 0) : Person(name, age) { 
+} 
+在给主构造函数的每个参数都设定了默认值之后，我们就可以使用任何传参组合的方式来对
+Student类进行实例化，当然也包含了刚才两种次构造函数的使用场景。
+由此可见，给函数设定参数默认值这个小技巧的作用还是极大的
