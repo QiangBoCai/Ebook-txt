@@ -1,0 +1,311 @@
+ 
+Android UI 组件1 
+
+0. Google 官方更加推荐使用ConstraintLayout 来开发程序界面
+Android  Stuido可视化编写UI 
+ConstraintLayout完全解析
+https://blog.csdn.net/guolin_blog/article/details/53122387
+
+XML形式编写UI 
+1. 常用控件：
+TextView 
+Button 
+EditText
+ImageView
+ProgressBar
+自定义控件
+ListView
+ReyclerView
+
+控件点击处理
+
+class MainActivity : AppCompatActivity(), View.OnClickListener { 
+    override fun onClick(v: View?) { 
+        when (v?.id) { 
+            R.id.button -> { 
+                imageView.setImageResource(R.drawable.img_2) 
+            } 
+        } 
+    }  
+}
+
+
+Android控件的可见属性。所有的Android控件都具有这个属性，可以通过android:visibility进行指定，可选值有3种：visible、invisible和gone 
+visible表示控件是可见的，这个值是默认值，不指定android:visibility时，控件都是可见的。
+invisible表示控件不可见，但是它仍然占据着原来的位置和大小，可以理解成控件变成透明状态了 
+gone则表示控件不仅不可见，而且不再占用任何屏幕空间
+使用的是setVisibility()方法，允许传入View.VISIBLE、View.INVISIBLE和View.GONE 
+
+AlertDialog
+
+class MainActivity : AppCompatActivity(), View.OnClickListener { 
+    override fun onClick(v: View?) { 
+        when (v?.id) { 
+            R.id.button -> { 
+                AlertDialog.Builder(this).apply { 
+                    setTitle("This is Dialog") 
+                    setMessage("Something important.") 
+                    setCancelable(false) 
+                    setPositiveButton("OK") { dialog, which -> 
+                    } 
+                    setNegativeButton("Cancel") { dialog, which -> 
+                    } 
+                    show() 
+                } 
+            } 
+        } 
+    } 
+}
+Android 基本空间 了解即可，用的时候查询API 即可
+
+
+2. 基本布局 
+LinearLayout  线性布局
+会将它所包含的控件在线性方向上依次排列，根据android:orientation="horizontal"可以控制是垂直还是水平
+
+RelativeLayout 又称作相对布局， 和LinearLayout 的排列规则不同，RelativeLayout 显得更加随意，它可以通过相对定位的方式让控件出现在布局的任何位置
+
+FrameLayout 又称作帧布局，它相比于前面两种布局就简单太多了， 它的应用场景少了很多。这种布局没有丰富的定位方式，所有的控件都会默认摆放在布局的左上角
+
+3.自定义个公用控件
+
+所有控件都是直接或间接继承自View的，所用的所有布局都是直接或间接继承自ViewGroup 
+ViewGroup 则是一种特殊的View，它可以包含很多子View和子ViewGr oup ，是一个用于放置控件和布局的容器
+
+在layout 目录下新建一个title.xml 布局
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:layout_width="match_parent" 
+    android:layout_height="wrap_content" 
+    android:background="@drawable/title_bg"> 
+    <Button 
+        android:id="@+id/titleBack" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_gravity="center" 
+        android:layout_margin="5dp" 
+        android:background="@drawable/back_bg" 
+        android:text="Back" 
+        android:textColor="#fff" /> 
+    <TextView 
+        android:id="@+id/titleText" 
+        android:layout_width="0dp" 
+        android:layout_height="wrap_content" 
+        android:layout_gravity="center" 
+        android:layout_weight="1" 
+        android:gravity="center" 
+        android:text="Title Text" 
+        android:textColor="#fff" 
+        android:textSize="24sp" /> 
+    <Button 
+        android:id="@+id/titleEdit" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_gravity="center" 
+        android:layout_margin="5dp" 
+        android:background="@drawable/edit_bg" 
+        android:text="Edit" 
+        android:textColor="#fff" /> 
+</LinearLayout> 
+
+现在标题栏布局已经编写完成了，剩下的就是如何在程序中使用这个标题栏了，修改
+activity_main.xml 中的代码，如下所示：
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:layout_width="match_parent" 
+    android:layout_height="match_parent" > 
+    <include layout="@layout/title" />  
+</LinearLayout> 
+我们只需要通过一行include语句引入标题栏布局就可以了
+
+
+如果布局中有一些控件要求能够响应事件，我们还是需要在每个Activity 中为这些控件单独编写一次事件注册的代码。比如标题栏
+中的返回按钮，其实不管是在哪一个Activity 中，这个按钮的功能都是相同的，即销毁当前Activity 。
+而如果在每一个Activity 中都需要重新注册一遍返回按钮的点击事件，无疑会增加很多重复代码，这种情况最好是使用自定义控件的方式来解决
+
+新建TitleLayout 继承自LinearLayout ，让它成为我们自定义的标题栏控件，代码如下所示：
+class TitleLayout(context: Context, attrs: AttributeSet) : LinearLayout(context, attrs) { 
+    init { 
+        LayoutInflater.from(context).inflate(R.layout.title, this) 
+        titleBack.setOnClickListener { //添加点击事件监听 ,直接使用id titleBack 不需要findViewById
+            val activity = context as Activity  
+            activity.finish() 
+        } 
+        titleEdit.setOnClickListener { 
+            Toast.makeText(context, "You clicked Edit button", Toast.LENGTH_SHORT).show() 
+        }
+    }  
+}
+
+通过LayoutInflater 的from()方法可以构建出一个LayoutInflater对象，然后调用inflate()方法就可以动态加载一个布局文件。
+inflate()方法接收两个参数：第一个参数是要加载的布局文件的id，这里我们传入R.layout.title；第二个参数是给加载好的布局再添加一个父布局
+
+
+在布局文件中添加这个自定义控件，修改
+activity_main.xml 中的代码，如下所示：
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:layout_width="match_parent" 
+    android:layout_height="match_parent" > 
+    <com.example.uicustomviews.TitleLayout 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" /> 
+</LinearLayout> 
+
+4.ListView  控件
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:layout_width="match_parent" 
+    android:layout_height="match_parent"> 
+ 
+    <ListView 
+        android:id="@+id/listView" 
+        android:layout_width="match_parent" 
+        android:layout_height="match_parent" /> 
+</LinearLayout> 
+class MainActivity : AppCompatActivity() { 
+     private val data = listOf("Apple", "Banana", "Orange", "Watermelon", 
+        "Pear", "Grape", "Pineapple", "Strawberry", "Cherry", "Mango", 
+        "Apple", "Banana", "Orange", "Watermelon", "Pear", "Grape", 
+        "Pineapple", "Strawberry", "Cherry", "Mango") 
+ 
+    override fun onCreate(savedInstanceState: Bundle?) { 
+        super.onCreate(savedInstanceState) 
+        setContentView(R.layout.activity_main) 
+        val adapter = ArrayAdapter<String>(this,android.R.layout.simple_list_item_1,data) //适配器
+        listView.adapter = adapter  //调用ListView的setAdapter()方法，将构建好的适配器对象传递进去，这样ListView和数据之间的关联就建立完成了
+    } 
+}
+
+ArrayAdapter 有多个构造函数的重载，你应该根据实际情况选择最合适的一种。
+我们这里提供的数据都是字符串，因此将ArrayAdapter 的泛型指定为String，
+然后在ArrayAdapter 的构造函数中依次传入Activity的实例、ListView子项布局的id，以及数据源
+
+
+定制ListView 子项界面
+在layout 目录下新建子项布局fruit_item.xml 
+LinearLayout xmlns:android="http://schemas.android.com/apk/res/android" 
+    android:layout_width="match_parent" 
+    android:layout_height="60dp"> 
+    <ImageView 
+        android:id="@+id/fruitImage" 
+        android:layout_width="40dp" 
+        android:layout_height="40dp" 
+        android:layout_gravity="center_vertical" 
+        android:layout_marginLeft="10dp"/> 
+    <TextView 
+        android:id="@+id/fruitName" 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:layout_gravity="center_vertical" 
+        android:layout_marginLeft="10dp" /> 
+</LinearLayout>
+
+自定义的适配器，这个适配器继承自ArrayAdapter，并将泛型指定为Fruit类
+class Fruit(val name:String, val imageId: Int)
+
+class FruitAdapter(activity: Activity, val resourceId: Int, data: List<Fruit>) : ArrayAdapter<Fruit>(activity, resourceId, data) { 
+     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View { //重写ArrayAdapter 的getView方法，定义子项界面，这个方法在每个子项被滚动到屏幕内的时候会被调用
+        val view = LayoutInflater.from(context).inflate(resourceId, parent, false) 
+
+        val fruitImage: ImageView = view.findViewById(R.id.fruitImage) 
+        val fruitName: TextView = view.findViewById(R.id.fruitName) 
+        val fruit = getItem(position) // 获取当前项的Fruit实例 
+        if (fruit != null) { 
+            fruitImage.setImageResource(fruit.imageId)
+            fruitName.text = fruit.name 
+        } 
+        return view 
+    } 
+}
+
+    private val fruitList = ArrayList<Fruit>() 
+    override fun onCreate(savedInstanceState: Bundle?) { 
+        super.onCreate(savedInstanceState) 
+        setContentView(R.layout.activity_main) 
+        initFruits() // 初始化水果数据 
+        val adapter = FruitAdapter(this, R.layout.fruit_item, fruitList) 
+        listView.adapter = adapter 
+    } 
+     private fun initFruits() { 
+        repeat(2) { 
+            fruitList.add(Fruit("Apple", R.drawable.apple_pic)) 
+            fruitList.add(Fruit("Banana", R.drawable.banana_pic)) 
+            fruitList.add(Fruit("Orange", R.drawable.orange_pic)) 
+            fruitList.add(Fruit("Watermelon", R.drawable.watermelon_pic)) 
+            fruitList.add(Fruit("Pear", R.drawable.pear_pic)) 
+            fruitList.add(Fruit("Grape", R.drawable.grape_pic)) 
+            fruitList.add(Fruit("Pineapple", R.drawable.pineapple_pic)) 
+            fruitList.add(Fruit("Strawberry", R.drawable.strawberry_pic)) 
+            fruitList.add(Fruit("Cherry", R.drawable.cherry_pic)) 
+            fruitList.add(Fruit("Mango", R.drawable.mango_pic)) 
+        } 
+    }  
+
+
+    提升ListView 的运行效率
+
+    在FruitAdapter的getView()方法中，每次都将布局重新加载了一遍，当ListView快速滚动的时候，这就会成为性能的瓶颈
+
+  getView()方法中还有一个convertView参数，这个参数用于将之前加载好的布局进行缓存，以便之后进行重用，我们可以借助这个参数来进行性能优化
+
+  class FruitAdapter(activity: Activity, val resourceId: Int, data: List<Fruit>) : ArrayAdapter<Fruit>(activity, resourceId, data) { 
+     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View { //重写ArrayAdapter 的getView方法，定义子项界面，这个方法在每个子项被滚动到屏幕内的时候会被调用
+        val view: View 
+        if (convertView == null) { //只有没有加载过的子项才调用inflate方法
+            view = LayoutInflater.from(context).inflate(resourceId, parent, false) 
+        } else { 
+            view = convertView 
+        }
+        val fruitImage: ImageView = view.findViewById(R.id.fruitImage) 
+        val fruitName: TextView = view.findViewById(R.id.fruitName) 
+        val fruit = getItem(position) // 获取当前项的Fruit实例 
+        if (fruit != null) { 
+            fruitImage.setImageResource(fruit.imageId)
+            fruitName.text = fruit.name 
+        } 
+        return view 
+    } 
+}
+
+新增了一个内部类ViewHolder，用于对ImageV iew和TextView的控件实例进行缓存
+inner class ViewHolder(val fruitImage: ImageView, val fruitName: TextView) 
+ 
+    override fun getView(position: Int, convertView: View?, parent: ViewGroup): View { 
+        val view: View 
+        val viewHolder: ViewHolder 
+        if (convertView == null) { 
+            view = LayoutInflater.from(context).inflate(resourceId, parent, false) 
+            val fruitImage: ImageView = view.findViewById(R.id.fruitImage)  
+            val fruitName: TextView = view.findViewById(R.id.fruitName) 
+            viewHolder = ViewHolder(fruitImage, fruitName) 
+            view.tag = viewHolder 
+        } else { 
+            view = convertView 
+            viewHolder = view.tag as ViewHolder 
+        } 
+ //当convertView为null的时候，创建一个ViewHolder对象，并将控件的实例存放在ViewHolder里
+ //调用View的setTag()方法，将ViewHolder对象存储在View中
+ //当convertView不为null的时候，则调用View的getTag()方法，把ViewHolder重新取出
+        val fruit = getItem(position) // 获取当前项的Fruit实例 
+        if (fruit != null) { 
+            viewHolder.fruitImage.setImageResource(fruit.imageId) 
+            viewHolder.fruitName.text = fruit.name 
+        } 
+        return view 
+    }
+
+ListView 的点击事件
+    listView.setOnItemClickListener { parent, view, position, id ->  //Lambda 表达式中。这里我们可以通过position参数判断用户点击的是哪一个子项
+            val fruit = fruitList[position] 
+            Toast.makeText(this, fruit.name, Toast.LENGTH_SHORT).show() 
+     } 
+
+OnItemClickListener接口的定义可以看到，是一个Java 单抽象方法接口，支持Lambda表达式
+它的唯一待实现方法onItemClick()中接收4个参数，这些就是我们要在Lambda表达式的参数列表中声明的参数了
+
+Kotlin允许我们将没有用到的参数使用下划线来替代，因此下面这种写法也是合法且更加推荐的：
+listView.setOnItemClickListener { _, _, position, _ -> 
+    val fruit = fruitList[position] 
+    Toast.makeText(this, fruit.name, Toast.LENGTH_SHORT).show() 
+} 
+注意，即使将没有用到的参数使用下划线来代替，它们之间的位置是不能改变的，position参数仍然得在第三个参数的位置
+
+5.ReyclerView
