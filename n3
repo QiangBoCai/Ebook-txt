@@ -1,0 +1,253 @@
+另外可以尝试编译小包在 PduPersister.java的load方法中修改Content-Type ，当音频为audio/ogg的时候，修改为其他音频类型比如application/ogg或者audio/mp3，看是否兼容支持；
+https://blog.51cto.com/u_13355654/6111880  Android Mms多媒体开发 SlideshowModel
+https://www.cnblogs.com/caidi/archive/2013/04/04/2999847.html  MMS业务流程
+https://blog.51cto.com/u_13355654/6173872  Android Mms：PDU介绍(协议数据单元) 
+
+****end of 20240108
+uim_refresh {
+            uim_refresh_indTlvs[0] {
+               Type = 0x10
+               Length = 6
+               refresh_event {
+                  stage = UIM_REFRESH_STAGE_END_WITH_FAILURE
+                  mode = UIM_REFRESH_MODE_RESET
+                  session_type = UIM_SESSION_TYPE_PRIMARY_GW
+                  aid_len = 0
+                  num_of_files = 0
+               }
+            }
+   }
+Request : Reboot operation implementation
+Case 1 :
+If device receive indication( UIM_REFRESH_MODE_RESET ) message during voice call conversation, AP side should configure specific flag( it means refresh reboot. )
+After call end, device operate reboot by AP side.
+                
+Case 2 : If device state idle state, should immediately reboot by AP side after receive Indication( UIM_REFRESH_MODE_RESET ).
+
+LA.QSSI.13.0/LINUX/android/frameworks/opt/telephony/src/java/com/android/internal/telephony/uicc/UiccController.java
+ EVENT_RADIO_ON
+ onSimRefresh
+ if (changed && resp.refreshResult == IccRefreshResponse.REFRESH_RESULT_RESET)
+ 执行refreshResult
+ 
+ 获取当前通话状态接口，如果不是通话中，直接重启;如果在通话中，执行refreshResult；
+ 监听广播通话状态变化，判断为挂断且refreshResult后重启
+
+import android.os.PowerManager;
+import android.telephony.PhoneStateListener;
+
+ 
+private boolean callIsIdle(){
+    TelephonyManager mTelephonyManager = (TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE);
+	int state = mTelephonyManager.getCallState();
+	android.util.Log.d("xiaotao","callIsIdle state= " +state );
+	return state == TelephonyManager.CALL_STATE_IDLE;
+}
+
+private void reboot(){
+    android.util.Log.d("xiaotao","reboot()");
+    PowerManager mPowerManager = (PowerManager)mContext.getSystemService(Context.POWER_SERVICE);
+	mPowerManager.reboot(null);
+}
+if(callIsIdle()){
+    reboot();
+}else{
+	TelephonyManager mTelephonyManager = ((TelephonyManager)mContext.getSystemService(Context.TELEPHONY_SERVICE));
+    MyPhoneStateListener mpsListener = new MyPhoneStateListener();
+    mTelephonyManager.listen(mpsListener, 200);
+}
+
+public class MyPhoneStateListener extends PhoneStateListener {
+	@Override
+	public void onCallStateChanged(int state, String number) {
+	    android.util.Log.d("xiaotao","onCallStateChanged state="+state);
+		if(TelephonyManager.CALL_STATE_IDLE==state){
+			reboot();
+		}
+	}
+} 
+
+
+29108414
+
+//开发者选项里USB debugging开关逻辑
+Settings >UsbDetailsFunctionsController>onRadioButtonClicked > mUsbBackend.setCurrentFunctions(function);
+	UsbBackend> mUsbManager.setCurrentFunctions(functions);
+UsbManager>UsbService.java >mDeviceManager.setCurrentFunctions(functions);
+UsbDeviceManager.java >setCurrentFunctions> MSG_SET_CURRENT_FUNCTIONS >  setEnabledFunctions(functions, false)>trySetEnabledFunctions >  updateUsbStateBroadcastIfNeeded
+
+packages/apps/Settings/src/com/android/settings/development/DevelopmentSettingsDashboardFragment.java
+  @Override
+   public void onEnableAdbDialogConfirmed() {
+	   final AdbPreferenceController controller = getDevelopmentOptionsController(
+			   AdbPreferenceController.class);
+	   controller.onAdbDialogConfirmed();
+   }
+public class AdbPreferenceController extends AbstractEnableAdbPreferenceController implements
+ public void onAdbDialogConfirmed() {
+    writeAdbSetting(true);
+ }  
+}
+
+protected void writeAdbSetting(boolean enabled) {
+  Settings.Global.putInt(mContext.getContentResolver(),
+		  Settings.Global.ADB_ENABLED, enabled ? ADB_SETTING_ON : ADB_SETTING_OFF);
+  notifyStateChanged();
+}
+
+private void notifyStateChanged() {
+  LocalBroadcastManager.getInstance(mContext)
+		  .sendBroadcast(new Intent(ACTION_ENABLE_ADB_STATE_CHANGED));
+}
+
+
+
+mAdbKeyStore.setLastConnectionTime(key, mTicker.currentTimeMillis());
+sendPersistKeyStoreMessage();
+scheduleJobToUpdateAdbKeyStore();
+}
+logAdbConnectionChanged(key, AdbProtoEnums.USER_ALLOWED, alwaysAllow);
+						
+//Usb Setting
+packages/apps/Settings/src/com/android/settings/hnlens/UsbSettings.java
+public boolean onPreferenceChange(Preference preference, Object object) {
+	boolean adbEnabled = false;
+	if(!TextUtils.isEmpty(newValue) && newValue.contains("adb")) {
+		adbEnabled = true;
+	}
+   writeAdbSetting(adbEnabled);
+private void writeAdbSetting(boolean enabled) {
+	Log.i(TAG, "writeAdbSetting enabled = " + enabled);
+	Settings.Global.putInt(getActivity().getContentResolver(),
+			Settings.Global.ADB_ENABLED, enabled ? ADB_SETTING_ON : ADB_SETTING_OFF);
+	notifyStateChanged();
+}
+
+private void notifyStateChanged() {
+	LocalBroadcastManager.getInstance(getActivity())
+			.sendBroadcast(new Intent(AdbPreferenceController.ACTION_ENABLE_ADB_STATE_CHANGED));
+}
+//USERDEBUG 版本 
+ // persist.sys.usb.config values can't be combined on build-time when property
+ // files are split into each partition.
+ // So we need to apply the same rule of build/make/tools/post_process_props.py
+  // on runtime.
+  static void update_sys_usb_config() {
+      bool is_debuggable = android::base::GetBoolProperty("ro.debuggable", false);
+      std::string config = android::base::GetProperty("persist.sys.usb.config", "");
+      // b/150130503, add (config == "none") condition here to prevent appending
+      // ",adb" if "none" is explicitly defined in default prop.
+      if (config.empty() || config == "none") {
+          InitPropertySet("persist.sys.usb.config", is_debuggable ? "adb" : "none");
+      } else if (is_debuggable && config.find("adb") == std::string::npos &&
+                 config.length() + 4 < PROP_VALUE_MAX) {
+          config.append(",adb");
+          InitPropertySet("persist.sys.usb.config", config);
+      }
+  }
+
+
+build/make/tools/post_process_props.py
+
+ # Put the modifications that you need to make into the */build.prop into this
+29 # function.
+30 def mangle_build_prop(prop_list):
+31   # If ro.debuggable is 1, then enable adb on USB by default
+32   # (this is for userdebug builds)
+33   if prop_list.get_value("ro.debuggable") == "1":
+34     val = prop_list.get_value("persist.sys.usb.config")
+35     if "adb" not in val:
+36       if val == "":
+37         val = "adb"
+38       else:
+39         val = val + ",adb"
+40       prop_list.put("persist.sys.usb.config", val)
+system/core/init/property_service.cpp
+/frameworks/base/services/core/java/com/android/server/adb/AdbService.java
+   /**
+   * The persistent property which stores whether adb is enabled or not.
+   * May also contain vendor-specific default functions for testing purposes.
+   */
+   private static final String USB_PERSISTENT_CONFIG_PROPERTY = "persist.sys.usb.config";
+   * Use the normal bootmode persistent prop to maintain state of adb across
+   * all boot modes.
+   */
+    mIsAdbUsbEnabled = containsFunction(
+                  SystemProperties.get(USB_PERSISTENT_CONFIG_PROPERTY, ""),
+
+				  
+//增加属性跳过弹框
+
+ //modify for BUG_7386 20240116 start
+    bool lens_auth_required = android::base::GetBoolProperty("persist.lens.usb.secure", true);
+    auth_required = (android::base::GetBoolProperty("ro.adb.secure", false))&&lens_auth_required;
+    //modify for BUG_7386 20240116 end
+	
+	
+//USER版本弹框 Allow USB debugging
+[init.svc.adbd]: [running]
+[persist.sys.usb.config]: [adb]
+[ro.adb.secure]: [1]
+[sys.usb.adb.disabled]: [0]
+[sys.usb.config]: [adb]
+
+https://blog.51cto.com/u_16213657/7435867 android user版本打開adb 设置默认允许启动不弹框
+https://www.uotan.cn/threads/adb.2889/
+
+
+
+frameworks/base/services/core/java/com/android/server/adb/AdbDebuggingManager.java
+
+public void setAdbEnabled(boolean enabled, byte transportType) {
+          if (transportType == AdbTransportType.USB) {
+              mHandler.sendEmptyMessage(enabled ? AdbDebuggingHandler.MESSAGE_ADB_ENABLED
+                                                : AdbDebuggingHandler.MESSAGE_ADB_DISABLED);
+
+
+AdbDebuggingThread 
+
+private void listenToSocket() throws IOException {
+if (buffer[0] == 'P' && buffer[1] == 'K') {
+        String key = new String(Arrays.copyOfRange(buffer, 2, count));
+        Slog.d(TAG, "Received public key: " + key);
+        Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_CONFIRM);
+ MESSAGE_ADB_CONFIRM
+	startConfirmationForKey(key, mFingerprints);
+
+
+frameworks/base/packages/SystemUI/src/com/android/systemui/usb/UsbDebuggingActivity.java
+ private void notifyService(boolean allow, boolean alwaysAllow) {
+            IAdbManager service = IAdbManager.Stub.asInterface(b);
+            if (allow) {
+				service.allowDebugging(alwaysAllow, mKey);
+			} else {
+                service.denyDebugging();
+            }
+/frameworks/base/services/core/java/com/android/server/adb/AdbService.java
+		mDebuggingManager.allowDebugging(alwaysAllow, publicKey);
+		
+frameworks/base/services/core/java/com/android/server/adb/AdbDebuggingManager.java
+public void allowDebugging(boolean alwaysAllow, String publicKey) {
+ Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_ALLOW);
+ public void handleMessage(Message msg) {
+   case MESSAGE_ADB_ALLOW: {
+	  if(alwaysAllow) {
+		if (!mConnectedKeys.containsKey(key)) {
+			mConnectedKeys.put(key, 1);
+		}
+		mAdbKeyStore.setLastConnectionTime(key, mTicker.currentTimeMillis());
+		sendPersistKeyStoreMessage();
+		scheduleJobToUpdateAdbKeyStore();
+	  }
+	  logAdbConnectionChanged(key, AdbProtoEnums.USER_ALLOWED, alwaysAllow);
+    }
+	
+	
+    private void sendPersistKeyStoreMessage() {
+       Message msg = mHandler.obtainMessage(AdbDebuggingHandler.MESSAGE_ADB_PERSIST_KEYSTORE);
+       mHandler.sendMessage(msg);
+    }
+	    case MESSAGE_ADB_PERSIST_KEYSTORE: {
+		if (mAdbKeyStore != null) {
+			mAdbKeyStore.persistKeyStore();
+		}
