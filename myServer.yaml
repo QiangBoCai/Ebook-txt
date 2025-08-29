@@ -1,0 +1,149 @@
+mixed-port: 7890
+socks-port: 7891
+redir-port: 7892
+allow-lan: false
+mode: rule
+log-level: info
+external-controller: 127.0.0.1:9090
+
+# 全局DNS设置 - 优化解析速度
+dns:
+  enable: true
+  listen: 0.0.0.0:53
+  enhanced-mode: fake-ip
+  fake-ip-range: 198.18.0.1/16
+  default-nameserver:
+    - 223.5.5.5
+    - 119.29.29.29
+  nameserver:
+    - https://doh.pub/dns-query
+    - https://dns.alidns.com/dns-query
+  fallback:
+    - https://doh.dns.sb/dns-query
+    - https://dns.cloudflare.com/dns-query
+  fallback-filter:
+    geoip: true
+    ipcidr:
+      - 240.0.0.0/4
+
+proxies:
+  - name: "外贸专用服务器"
+    type: ss
+    server: 43.159.37.136  # 请替换为您的服务器IP
+    port: 62448
+    cipher: aes-256-gcm
+    password: "tiktokok"
+    udp: true  # 启用UDP支持，对视频会议等应用重要
+
+proxy-groups:
+  # 外贸核心应用组
+  - name: "🛒 外贸平台"
+    type: select
+    proxies:
+      - 外贸专用服务器
+      - DIRECT
+
+  # 社交媒体组
+  - name: "📱 社交媒体"
+    type: select
+    proxies:
+      - 外贸专用服务器
+      - DIRECT
+
+  # 通讯工具组
+  - name: "💬 通讯工具"
+    type: select
+    proxies:
+      - 外贸专用服务器
+      - DIRECT
+
+  # 云服务与存储
+  - name: "☁️ 云服务"
+    type: select
+    proxies:
+      - 外贸专用服务器
+      - DIRECT
+
+  # 自动测速选择
+  - name: "🚀 自动选择"
+    type: url-test
+    url: "http://www.gstatic.com/generate_204"
+    interval: 300
+    tolerance: 50
+    proxies:
+      - 外贸专用服务器
+
+rules:
+  # 国内直连规则
+  - DOMAIN-SUFFIX,cn,DIRECT
+  - DOMAIN-SUFFIX,baidu.com,DIRECT
+  - DOMAIN-SUFFIX,taobao.com,DIRECT
+  - DOMAIN-SUFFIX,qq.com,DIRECT
+  - DOMAIN-SUFFIX,weibo.com,DIRECT
+  - DOMAIN-SUFFIX,zhihu.com,DIRECT
+  - DOMAIN-SUFFIX,jd.com,DIRECT
+  - DOMAIN-SUFFIX,163.com,DIRECT
+  - DOMAIN-SUFFIX,sina.com.cn,DIRECT
+  - DOMAIN-SUFFIX,sohu.com,DIRECT
+  - DOMAIN-SUFFIX,alicdn.com,DIRECT
+  - GEOIP,CN,DIRECT
+
+  # 外贸平台规则
+  - DOMAIN-SUFFIX,alibaba.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,alibaba-inc.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,aliexpress.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,amazon.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,amazonaws.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,ebay.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,shopify.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,woocommerce.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,etsy.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,wish.com,🛒 外贸平台
+  - DOMAIN-SUFFIX,dhgate.com,🛒 外贸平台
+
+  # 社交媒体规则
+  - DOMAIN-SUFFIX,facebook.com,📱 社交媒体
+  - DOMAIN-SUFFIX,fb.com,📱 社交媒体
+  - DOMAIN-SUFFIX,fbcdn.net,📱 社交媒体
+  - DOMAIN-SUFFIX,twitter.com,📱 社交媒体
+  - DOMAIN-SUFFIX,t.co,📱 社交媒体
+  - DOMAIN-SUFFIX,instagram.com,📱 社交媒体
+  - DOMAIN-SUFFIX,linkedin.com,📱 社交媒体
+  - DOMAIN-SUFFIX,pinterest.com,📱 社交媒体
+  - DOMAIN-SUFFIX,tiktok.com,📱 社交媒体
+  - DOMAIN-SUFFIX,tiktokv.com,📱 社交媒体
+  - DOMAIN-SUFFIX,byteoversea.com,📱 社交媒体
+  - DOMAIN-SUFFIX,snapchat.com,📱 社交媒体
+  - DOMAIN-SUFFIX,reddit.com,📱 社交媒体
+
+  # 通讯工具规则
+  - DOMAIN-SUFFIX,whatsapp.com,💬 通讯工具
+  - DOMAIN-SUFFIX,whatsapp.net,💬 通讯工具
+  - DOMAIN-SUFFIX,telegram.org,💬 通讯工具
+  - DOMAIN-SUFFIX,telegram.me,💬 通讯工具
+  - DOMAIN-SUFFIX,t.me,💬 通讯工具
+  - DOMAIN-SUFFIX,slack.com,💬 通讯工具
+  - DOMAIN-SUFFIX,discord.com,💬 通讯工具
+  - DOMAIN-SUFFIX,discordapp.com,💬 通讯工具
+  - DOMAIN-SUFFIX,skype.com,💬 通讯工具
+  - DOMAIN-SUFFIX,viber.com,💬 通讯工具
+  - DOMAIN-SUFFIX,wechat.com,💬 通讯工具
+
+  # 云服务规则
+  - DOMAIN-SUFFIX,google.com,☁️ 云服务
+  - DOMAIN-SUFFIX,gmail.com,☁️ 云服务
+  - DOMAIN-SUFFIX,googleapis.com,☁️ 云服务
+  - DOMAIN-SUFFIX,googlemail.com,☁️ 云服务
+  - DOMAIN-SUFFIX,gstatic.com,☁️ 云服务
+  - DOMAIN-SUFFIX,youtube.com,☁️ 云服务
+  - DOMAIN-SUFFIX,ytimg.com,☁️ 云服务
+  - DOMAIN-SUFFIX,dropbox.com,☁️ 云服务
+  - DOMAIN-SUFFIX,cloudfront.net,☁️ 云服务
+  - DOMAIN-SUFFIX,aws.amazon.com,☁️ 云服务
+  - DOMAIN-SUFFIX,microsoft.com,☁️ 云服务
+  - DOMAIN-SUFFIX,office.com,☁️ 云服务
+  - DOMAIN-SUFFIX,live.com,☁️ 云服务
+  - DOMAIN-SUFFIX,onedrive.com,☁️ 云服务
+
+  # 最终规则 - 其他所有海外流量走代理
+  - MATCH,🚀 自动选择
